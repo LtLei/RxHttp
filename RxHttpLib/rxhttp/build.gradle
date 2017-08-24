@@ -1,4 +1,5 @@
 apply plugin: 'com.android.library'
+apply plugin: 'com.github.dcendents.android-maven'
 
 android {
     compileSdkVersion 26
@@ -21,4 +22,12 @@ android {
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
+    //RxCache缓存工具
+    compile 'com.github.LtLei:RxCache:v1.0.0'
+    //retrofit2
+    compile 'com.squareup.retrofit2:retrofit:2.3.0'
+    compile 'com.squareup.retrofit2:converter-gson:2.3.0'
+    compile 'com.squareup.retrofit2:adapter-rxjava2:2.3.0'
+    //okhttp
+    compile 'com.squareup.okhttp3:logging-interceptor:3.1.2'
 }

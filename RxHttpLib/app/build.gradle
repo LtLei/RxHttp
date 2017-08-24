@@ -27,4 +27,6 @@ dependencies {
     testImplementation 'junit:junit:4.12'
     implementation 'com.android.support.constraint:constraint-layout:1.0.2'
     implementation 'com.android.support:appcompat-v7:26.0.1'
+    implementation project(':rxhttp')
+    implementation files('libs/commons-beanutils-1.9.3.jar')
 }
