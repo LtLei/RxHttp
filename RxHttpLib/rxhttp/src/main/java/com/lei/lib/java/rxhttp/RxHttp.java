@@ -67,15 +67,38 @@ public class RxHttp {
 
     //==============================================================
     //                          全局的变量设置
+    //  包含以下设置，这些设置将都是全局的，一次更改，全部生效，这些全部可以在Buider中进行设置，
+    //       其中一部分可以在getInstance()之后进行设置（可以设置的标注：*_* ）
+    //      1、设置是否打印日志：打印运行期间网络请求日志，缓存日志等。
+    //      2、添加全局的Header以及Param的功能，以及删除这些Header以及Param的功能 *_*
+    //      3、设置全局的OkHttpClient：包含OkHttpProvider的全部内容
+    //      4、设置全局的Retrofit客户端：包含RetrofitProvider的全部内容，以及添加一个ApiService，
+    //          这个API将全局生效，如果不单独设置，都会使用这个API
+    //      5、全局设置缓存，包含RxCacheProvider的全部内容，以及使用缓存的方式（默认为不使用任何缓存），
+    //          这个也是全局生效，如果不单独设置，都会使用这种方式进行缓存
+    //      6、未定。。。
     //==============================================================
+
+    //==============================================================
+    //                          单独生效的变量设置
+    //  包含以下设置，这些设置仅在本次请求时生效，不会影响到其他的请求，这些设置仅在getInstance()之后才可以设置
+    //      1、设置缓存的key以及缓存的Time
+    //      2、添加仅本次生效的Header和Param的功能，以及删除这些Header和Param的功能
+    //      3、更换一个临时的ApiService的功能，若不设置，则使用全局的，设置后，本次将使用设置的
+    //      4、单独设置缓存的方式，若设置，仅本次生效，否则使用全局的设置。
+    //      5、未定。。。
+    //==============================================================
+
     private OkHttpProvider.Builder commonOkHttpProviderBuilder;
     private OkHttpProvider.Builder primaryOkHttpProviderBuilder;
 
-    public OkHttpProvider.Builder getCommonOkHttpProviderBuilder(){
-       if (commonOkHttpProviderBuilder==null)commonOkHttpProviderBuilder= new OkHttpProvider.Builder();
-       return commonOkHttpProviderBuilder;
+    public OkHttpProvider.Builder getCommonOkHttpProviderBuilder() {
+        if (commonOkHttpProviderBuilder == null)
+            commonOkHttpProviderBuilder = new OkHttpProvider.Builder();
+        return commonOkHttpProviderBuilder;
     }
-    public OkHttpProvider.Builder getPrimaryOkHttpProviderBuilder(){
+
+    public OkHttpProvider.Builder getPrimaryOkHttpProviderBuilder() {
         primaryOkHttpProviderBuilder = OkHttpProvider.copyOf(getCommonOkHttpProviderBuilder());
         return primaryOkHttpProviderBuilder;
     }
