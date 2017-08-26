@@ -5,17 +5,13 @@ import android.support.v7.app.AppCompatActivity;
 
 import com.lei.lib.java.rxcache.util.LogUtil;
 import com.lei.lib.java.rxhttp.RxHttp;
-import com.lei.lib.java.rxhttp.okhttp.OkHttpProvider;
+import com.lei.lib.java.rxhttp.providers.OkHttpProvider;
 
 import org.apache.commons.beanutils.BeanUtils;
 
-import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
-
-import okhttp3.Interceptor;
-import okhttp3.Response;
 
 public class MainActivity extends AppCompatActivity {
 
