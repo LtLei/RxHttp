@@ -121,32 +121,37 @@ public class CommonProvider {
 
     public void generate() {
         //需要设置一下retrofit rxCache okHttpClient
-        generateRetorfit();
-        generateCache();
         generateOkHttpClient();
+        generateCache();
+        generateRetorfit();
     }
 
     public void generateRetorfit() {
         if (retrofitProvider == null) {
             retrofitProvider = new RetrofitProvider();
-            retrofitProvider.generateBuilder();
         }
+        retrofitProvider.setClient(okHttpClient);
+
+        retrofitProvider.generateBuilder();
+
         retrofit = retrofitProvider.getRetrofitBuilder().build();
     }
 
     public void generateCache() {
         if (cacheProvider == null) {
             cacheProvider = new CacheProvider(context);
-            cacheProvider.generateBuilder();
         }
+        cacheProvider.generateBuilder();
+
         rxCache = cacheProvider.getCacheBuilder().build();
     }
 
     public void generateOkHttpClient() {
         if (okHttpProvider == null) {
             okHttpProvider = new OkHttpProvider();
-            okHttpProvider.generateBuilder();
         }
+        okHttpProvider.generateBuilder();
+
         okHttpClient = okHttpProvider.getOkBuilder().build();
     }
 

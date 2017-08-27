@@ -171,8 +171,9 @@ public class OkHttpProvider {
         if (hostnameVerifier != null) {
             okBuilder.hostnameVerifier(hostnameVerifier);
         }
-
-        okBuilder.sslSocketFactory(sslSocketFactory, x509TrustManager);
+        if (sslSocketFactory != null && x509TrustManager != null) {
+            okBuilder.sslSocketFactory(sslSocketFactory, x509TrustManager);
+        }
     }
 
 

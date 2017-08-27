@@ -16,6 +16,7 @@ import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.X509TrustManager;
 
+import io.reactivex.Observable;
 import okhttp3.Authenticator;
 import okhttp3.CookieJar;
 import okhttp3.HttpUrl;
@@ -23,6 +24,7 @@ import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
 import retrofit2.CallAdapter;
 import retrofit2.Converter;
+import retrofit2.Retrofit;
 
 /**
  * Created by rymyz on 2017/8/23.
@@ -370,5 +372,17 @@ public class RxHttp {
         return this;
     }
 
+    public Retrofit getRetrofit() {
+        commonProvider.generate();
+        return commonProvider.getRetrofit();
+    }
 
+    public <S> S createService() {
+        Utilities.checkNotNull(commonProvider.getApiService(), "ApiService is null.");
+        return (S) getRetrofit().create(commonProvider.getApiService());
+    }
+
+    public <T> void handleResult(Observable<T> dataObservable){
+
+    }
 }

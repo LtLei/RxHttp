@@ -3,11 +3,8 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/RxHttpLib.iml" filepath="$PROJECT_DIR$/RxHttpLib.iml" />
-      <module fileurl="file://D:\AndroidProduces\AndroidLibs\RxHttp\RxHttpLib\RxHttpLib.iml" filepath="D:\AndroidProduces\AndroidLibs\RxHttp\RxHttpLib\RxHttpLib.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
-      <module fileurl="file://D:\AndroidProduces\AndroidLibs\RxHttp\RxHttpLib\app\app.iml" filepath="D:\AndroidProduces\AndroidLibs\RxHttp\RxHttpLib\app\app.iml" />
       <module fileurl="file://$PROJECT_DIR$/rxhttp/rxhttp.iml" filepath="$PROJECT_DIR$/rxhttp/rxhttp.iml" />
-      <module fileurl="file://D:\AndroidProduces\AndroidLibs\RxHttp\RxHttpLib\rxhttp\rxhttp.iml" filepath="D:\AndroidProduces\AndroidLibs\RxHttp\RxHttpLib\rxhttp\rxhttp.iml" />
     </modules>
   </component>
 </project>

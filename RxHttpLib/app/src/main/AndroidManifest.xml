@@ -2,6 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.lei.lib.java.rxhttp.demo">
 
+    <uses-permission android:name="android.permission.INTERNET" />
     <application
         android:name=".BaseApp"
         android:allowBackup="true"
