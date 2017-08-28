@@ -2,15 +2,20 @@ package com.lei.lib.java.rxhttp;
 
 import android.app.Application;
 
+import com.google.gson.Gson;
 import com.lei.lib.java.rxcache.converter.IConverter;
 import com.lei.lib.java.rxcache.mode.CacheMode;
 import com.lei.lib.java.rxhttp.method.CacheMethod;
 import com.lei.lib.java.rxhttp.providers.CommonProvider;
 import com.lei.lib.java.rxhttp.providers.PrimaryProvider;
+import com.lei.lib.java.rxhttp.service.RxService;
 import com.lei.lib.java.rxhttp.util.Utilities;
+
+import org.json.JSONObject;
 
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLSocketFactory;
@@ -21,13 +26,17 @@ import okhttp3.Authenticator;
 import okhttp3.CookieJar;
 import okhttp3.HttpUrl;
 import okhttp3.Interceptor;
+import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
+import okhttp3.RequestBody;
+import okhttp3.ResponseBody;
 import retrofit2.CallAdapter;
 import retrofit2.Converter;
-import retrofit2.Retrofit;
 
 /**
- * Created by rymyz on 2017/8/23.
+ * RxHttp使用类
+ *
+ * @author lei
  */
 
 public class RxHttp {
@@ -35,6 +44,7 @@ public class RxHttp {
     //                           init方法
     //==============================================================
     private static Application mContext;
+    private Gson mGson;
 
     public static void init(Application context) {
         mContext = Utilities.checkNotNull(context, "context is null.");
@@ -62,6 +72,7 @@ public class RxHttp {
 
     private RxHttp() {
         assertInit();
+        mGson = new Gson();
         commonProvider = new CommonProvider(mContext);
         primaryProvider = new PrimaryProvider();
     }
@@ -82,10 +93,10 @@ public class RxHttp {
         return this;
     }
 
-    public RxHttp setCommonApiService(Class<?> apiService) {
-        commonProvider.setApiService(apiService);
-        return this;
-    }
+//    public <T> RxHttp setCommonApiService(Class<T> apiService) {
+//        commonProvider.setApiService(apiService);
+//        return this;
+//    }
 
     public RxHttp addCommonHeader(String key, String value) {
         commonProvider.addHeader(key, value);
@@ -304,6 +315,11 @@ public class RxHttp {
         return this;
     }
 
+    public RxHttp useEntity(boolean useEntity) {
+        commonProvider.setUseEntity(useEntity);
+        return this;
+    }
+
     public RxHttp setDiskDirName(String diskDirName) {
         commonProvider.getCacheProvider().setDiskDirName(diskDirName);
         return this;
@@ -362,7 +378,7 @@ public class RxHttp {
         return this;
     }
 
-    public RxHttp setPrimaryApiService(Class<?> apiService) {
+    public <T> RxHttp setPrimaryApiService(Class<T> apiService) {
         primaryProvider.setApiService(apiService);
         return this;
     }
@@ -372,17 +388,41 @@ public class RxHttp {
         return this;
     }
 
-    public Retrofit getRetrofit() {
-        commonProvider.generate();
-        return commonProvider.getRetrofit();
+    private Map<String, String> getAllParams() {
+        Map<String, String> map = new LinkedHashMap<>();
+        if (!primaryProvider.getParams().isEmpty())
+            map.putAll(primaryProvider.getParams());
+        if (!commonProvider.getParams().isEmpty())
+            map.putAll(commonProvider.getParams());
+        primaryProvider.clearParams();
+        return map;
     }
 
-    public <S> S createService() {
-        Utilities.checkNotNull(commonProvider.getApiService(), "ApiService is null.");
-        return (S) getRetrofit().create(commonProvider.getApiService());
+    private Map<String, String> getAllHeaders() {
+        Map<String, String> map = new LinkedHashMap<>();
+        if (!primaryProvider.getHeaders().isEmpty())
+            map.putAll(primaryProvider.getHeaders());
+        if (!commonProvider.getHeaders().isEmpty())
+            map.putAll(commonProvider.getHeaders());
+        primaryProvider.clearHeaders();
+        return map;
     }
 
-    public <T> void handleResult(Observable<T> dataObservable){
+    public Observable<ResponseBody> get(String path) {
+        commonProvider.generate(getAllHeaders());
 
+        if (commonProvider.getApiService() instanceof RxService) {
+            return ((RxService) commonProvider.getApiService()).get(path, getAllParams());
+        }
+        return null;
+    }
+    public Observable<ResponseBody> postJson(String path){
+        commonProvider.generate(getAllHeaders());
+
+        if (commonProvider.getApiService() instanceof RxService) {
+            RequestBody body = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), new JSONObject(getAllParams()).toString());
+            return ((RxService) commonProvider.getApiService()).postJson(path, body);
+        }
+        return null;
     }
 }

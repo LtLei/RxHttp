@@ -11,7 +11,7 @@ import java.util.LinkedHashMap;
  * @author lei
  */
 
-public class PrimaryProvider {
+public class PrimaryProvider<T> {
     //==============================================================
     //                          单独生效的变量设置
     //      1、设置缓存的key以及缓存的Time
@@ -24,7 +24,7 @@ public class PrimaryProvider {
     private long cacheTime;
     private LinkedHashMap<String, String> headers = new LinkedHashMap<>();
     private LinkedHashMap<String, String> params = new LinkedHashMap<>();
-    private Class<?> apiService;
+    private Class<T> apiService;
     private CacheMethod cacheMethod;
 
     public PrimaryProvider() {
@@ -81,7 +81,7 @@ public class PrimaryProvider {
         this.params.clear();
     }
 
-    public void setApiService(Class<?> apiService) {
+    public void setApiService(Class<T> apiService) {
         Utilities.checkNotNull(apiService, "apiService is null.");
         this.apiService = apiService;
     }
@@ -106,7 +106,7 @@ public class PrimaryProvider {
         return params;
     }
 
-    public Class<?> getApiService() {
+    public Class<T> getApiService() {
         return apiService;
     }
 

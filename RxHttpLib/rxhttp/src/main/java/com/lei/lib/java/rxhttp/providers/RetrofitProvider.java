@@ -1,5 +1,6 @@
 package com.lei.lib.java.rxhttp.providers;
 
+import com.lei.lib.java.rxhttp.service.RxService;
 import com.lei.lib.java.rxhttp.util.Utilities;
 
 import java.util.ArrayList;
@@ -26,6 +27,7 @@ public class RetrofitProvider {
     private List<CallAdapter.Factory> callAdapterFactories = new ArrayList<>();
     private List<Converter.Factory> converterFactories = new ArrayList<>();
     private OkHttpClient okHttpClient;
+    private Class<?> apiService;
 
     public RetrofitProvider() {
         retrofitBuilder = new Retrofit.Builder();
@@ -62,7 +64,9 @@ public class RetrofitProvider {
     public void setClient(OkHttpClient okHttpClient) {
         this.okHttpClient = Utilities.checkNotNull(okHttpClient, "okHttpClient is null.");
     }
-
+    public void setApiService(Class<?> apiService){
+        this.apiService=Utilities.checkNotNull(apiService,"apiService is null.");
+    }
     public void generateBuilder() {
         //校验URL
         if (!baseStringUrl.isEmpty() && baseHttpUrl != null) {
@@ -106,6 +110,10 @@ public class RetrofitProvider {
             okHttpClient = okHttpProvider.getOkBuilder().build();
             retrofitBuilder.client(okHttpClient);
         }
+
+        if (apiService==null){
+            apiService = RxService.class;
+        }
     }
 
     public Retrofit.Builder getRetrofitBuilder() {
@@ -130,5 +138,9 @@ public class RetrofitProvider {
 
     public OkHttpClient getOkHttpClient() {
         return okHttpClient;
+    }
+
+    public Class<?> getApiService() {
+        return apiService;
     }
 }
