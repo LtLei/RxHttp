@@ -1,9 +1,13 @@
 package com.lei.lib.java.rxhttp.providers;
 
+import com.lei.lib.java.rxhttp.interceptors.HeadInterceptor;
 import com.lei.lib.java.rxhttp.util.Utilities;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import javax.net.ssl.HostnameVerifier;
@@ -35,9 +39,8 @@ public class OkHttpProvider {
     private HostnameVerifier hostnameVerifier;
     private SSLSocketFactory sslSocketFactory;
     private X509TrustManager x509TrustManager;
-
+    private Map<String,String> headers = new LinkedHashMap<>();
     public OkHttpProvider() {
-        okBuilder = new OkHttpClient.Builder();
     }
 
     public OkHttpProvider(OkHttpClient.Builder okBuilder) {
@@ -83,6 +86,11 @@ public class OkHttpProvider {
      */
     public void addInterceptor(Interceptor interceptor) {
         this.interceptors.add(Utilities.checkNotNull(interceptor, "interceptor is null."));
+    }
+
+    public void setHeaders(Map<String,String> headers){
+        if (headers==null)return;
+        this.headers = headers;
     }
 
     /**
@@ -149,6 +157,8 @@ public class OkHttpProvider {
     }
 
     public void generateBuilder() {
+        okBuilder = new OkHttpClient.Builder();
+
         okBuilder.connectTimeout(connectTimeout, TimeUnit.MILLISECONDS);
         okBuilder.readTimeout(readTimeout, TimeUnit.MILLISECONDS);
         okBuilder.writeTimeout(writeTimeout, TimeUnit.MILLISECONDS);
@@ -162,6 +172,9 @@ public class OkHttpProvider {
                 okBuilder.addNetworkInterceptor(i);
             }
         }
+
+        okBuilder.addInterceptor(new HeadInterceptor(headers));
+
         if (authenticator != null) {
             okBuilder.authenticator(authenticator);
         }
@@ -178,6 +191,9 @@ public class OkHttpProvider {
 
 
     public OkHttpClient.Builder getOkBuilder() {
+        if (okBuilder==null){
+            generateBuilder();
+        }
         return this.okBuilder;
     }
 
@@ -195,6 +211,10 @@ public class OkHttpProvider {
 
     public List<Interceptor> getInterceptors() {
         return interceptors;
+    }
+
+    public Map<String, String> getHeaders() {
+        return headers;
     }
 
     public List<Interceptor> getNetInterceptors() {

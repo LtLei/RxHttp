@@ -6,13 +6,16 @@ import com.google.gson.Gson;
 import com.lei.lib.java.rxcache.converter.IConverter;
 import com.lei.lib.java.rxcache.mode.CacheMode;
 import com.lei.lib.java.rxhttp.method.CacheMethod;
+import com.lei.lib.java.rxhttp.method.HttpMethod;
 import com.lei.lib.java.rxhttp.providers.CommonProvider;
 import com.lei.lib.java.rxhttp.providers.PrimaryProvider;
 import com.lei.lib.java.rxhttp.service.RxService;
+import com.lei.lib.java.rxhttp.util.RxUtil;
 import com.lei.lib.java.rxhttp.util.Utilities;
 
 import org.json.JSONObject;
 
+import java.lang.reflect.Type;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -22,6 +25,8 @@ import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.X509TrustManager;
 
 import io.reactivex.Observable;
+import io.reactivex.ObservableTransformer;
+import io.reactivex.functions.Function;
 import okhttp3.Authenticator;
 import okhttp3.CookieJar;
 import okhttp3.HttpUrl;
@@ -408,21 +413,72 @@ public class RxHttp {
         return map;
     }
 
-    public Observable<ResponseBody> get(String path) {
-        commonProvider.generate(getAllHeaders());
 
+    private Observable<ResponseBody> request(HttpMethod httpMethod, String path) {
+        commonProvider.getOkHttpProvider().setHeaders(getAllHeaders());
+        commonProvider.generate();
         if (commonProvider.getApiService() instanceof RxService) {
-            return ((RxService) commonProvider.getApiService()).get(path, getAllParams());
+            switch (httpMethod) {
+                case JSON_POST:
+                    RequestBody body = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), new JSONObject(getAllParams()).toString());
+                    return ((RxService) commonProvider.getApiService()).postJson(path, body);
+            }
+//            createdObservable = ((RxService) commonProvider.getApiService()).get(path, getAllParams());
         }
+        //暂不实现
         return null;
     }
-    public Observable<ResponseBody> postJson(String path){
-        commonProvider.generate(getAllHeaders());
 
-        if (commonProvider.getApiService() instanceof RxService) {
-            RequestBody body = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), new JSONObject(getAllParams()).toString());
-            return ((RxService) commonProvider.getApiService()).postJson(path, body);
+    public <S, T> ObservableTransformer<S, T> convert(Type type) {
+        if (commonProvider.isUseEntity()) {
+            return RxUtil.data_with_entity(type);
+        } else {
+            return RxUtil.data_no_entity(type);
         }
+    }
+
+    private Observable<ResponseBody> request1(HttpMethod httpMethod, String path) {
+        commonProvider.getOkHttpProvider().setHeaders(getAllHeaders());
+        commonProvider.generate();
+        if (commonProvider.getApiService() instanceof RxService) {
+            switch (httpMethod) {
+                case JSON_POST:
+                    RequestBody body = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), new JSONObject(getAllParams()).toString());
+                   return ((RxService) commonProvider.getApiService()).postJson(path, body);
+                case GET:
+                    return ((RxService) commonProvider.getApiService()).get(path, getAllParams());
+            }
+//            createdObservable = ((RxService) commonProvider.getApiService()).get(path, getAllParams());
+        }
+        //暂不实现
         return null;
     }
+
+    Observable observable;
+
+    public RxHttp get(String path) {
+        observable = request1(HttpMethod.GET, path);
+        return this;
+    }
+
+    public  Observable<String> preConvert(Function<ResponseBody,String> function) {
+        observable=observable.map(function);
+        return observable;
+    }
+
+    public Observable<ResponseBody> postJson(String path) {
+        return request(HttpMethod.JSON_POST, path);
+    }
+
+
+//    public Observable<ResponseBody> postJson(String path) {
+//        commonProvider.getOkHttpProvider().setHeaders(getAllHeaders());
+//        commonProvider.generate();
+//
+//        if (commonProvider.getApiService() instanceof RxService) {
+//            RequestBody body = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), new JSONObject(getAllParams()).toString());
+//            return ((RxService) commonProvider.getApiService()).postJson(path, body);
+//        }
+//        return null;
+//    }
 }

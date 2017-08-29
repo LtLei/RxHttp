@@ -3,7 +3,7 @@ package com.lei.lib.java.rxhttp.providers;
 import android.app.Application;
 
 import com.lei.lib.java.rxcache.RxCache;
-import com.lei.lib.java.rxhttp.interceptors.HeadInterceptor;
+import com.lei.lib.java.rxcache.util.LogUtil;
 import com.lei.lib.java.rxhttp.method.CacheMethod;
 import com.lei.lib.java.rxhttp.util.Utilities;
 
@@ -19,7 +19,7 @@ import retrofit2.Retrofit;
  * @author lei
  */
 
-public class CommonProvider <T>{
+public class CommonProvider<T> {
     //==============================================================
     //                          全局的变量设置
     //      1、设置是否打印日志：打印运行期间网络请求日志，缓存日志等。
@@ -43,7 +43,7 @@ public class CommonProvider <T>{
     private CacheProvider cacheProvider;
     private T apiService;
     private CacheMethod cacheMethod = CacheMethod.ONLY_NET;
-    private boolean useEntity =true;
+    private boolean useEntity = true;
 
     public CommonProvider(Application context) {
         this.context = context;
@@ -56,9 +56,10 @@ public class CommonProvider <T>{
         this.debug = debug;
     }
 
-    public void setUseEntity(boolean useEntity){
+    public void setUseEntity(boolean useEntity) {
         this.useEntity = useEntity;
     }
+
     public void addHeader(String key, String value) {
         Utilities.checkNullOrEmpty(key, "key is null or empty.");
         Utilities.checkNotNull(value, "value is null");
@@ -120,11 +121,12 @@ public class CommonProvider <T>{
         this.cacheMethod = cacheMethod;
     }
 
-    public void generate(Map<String,String> allHeaders) {
+    public void generate() {
         //需要设置一下retrofit rxCache okHttpClient
-        generateOkHttpClient(allHeaders);
+        generateOkHttpClient();
         generateCache();
         generateRetorfit();
+
     }
 
     public void generateRetorfit() {
@@ -148,12 +150,10 @@ public class CommonProvider <T>{
         rxCache = cacheProvider.getCacheBuilder().build();
     }
 
-    public void generateOkHttpClient(Map<String,String> allHeaders) {
+    public void generateOkHttpClient() {
         if (okHttpProvider == null) {
             okHttpProvider = new OkHttpProvider();
         }
-        okHttpProvider.addInterceptor(new HeadInterceptor(allHeaders));
-
         okHttpProvider.generateBuilder();
 
         okHttpClient = okHttpProvider.getOkBuilder().build();
@@ -201,5 +201,9 @@ public class CommonProvider <T>{
 
     public CacheMethod getCacheMethod() {
         return cacheMethod;
+    }
+
+    public boolean isUseEntity() {
+        return useEntity;
     }
 }

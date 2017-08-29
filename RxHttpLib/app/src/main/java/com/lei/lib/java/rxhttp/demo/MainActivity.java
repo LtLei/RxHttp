@@ -3,20 +3,23 @@ package com.lei.lib.java.rxhttp.demo;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.View;
 
-import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import com.google.gson.stream.JsonReader;
-import com.lei.lib.java.rxcache.util.LogUtil;
 import com.lei.lib.java.rxcache.util.RxUtil;
 import com.lei.lib.java.rxhttp.RxHttp;
 
-import java.io.StringReader;
 import java.lang.reflect.Type;
 import java.util.List;
+import java.util.Observable;
 
+import io.reactivex.ObservableSource;
+import io.reactivex.ObservableTransformer;
+import io.reactivex.Observer;
+import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.Consumer;
 import io.reactivex.functions.Function;
+import io.reactivex.plugins.RxJavaPlugins;
 import okhttp3.ResponseBody;
 
 public class MainActivity extends AppCompatActivity {
@@ -26,35 +29,57 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        final Type type = new TypeToken<List<Repo>>() {
-        }.getType();
         RxHttp.getInstance()
-//                .get("users/LtLei/repos")
-                .postJson("appConfig")
-                .map(new Function<ResponseBody, String>() {
+                .get("index")
+                .preConvert(new Function<ResponseBody, String>() {
                     @Override
                     public String apply(ResponseBody responseBody) throws Exception {
-                        String str = responseBody.string();
-                        LogUtil.e(str);
-                        return str;
+                        return responseBody.string();
                     }
                 })
-                .map(new Function<String, List<Repo>>() {
+                .compose(com.lei.lib.java.rxhttp.util.RxUtil.<String,UserBean>data_with_entity(UserBean.class))
+                .compose(RxUtil.<UserBean>io_main())
+                .subscribe(new Consumer<UserBean>() {
                     @Override
-                    public List<Repo> apply(String s) throws Exception {
-                        JsonReader jsonReader = new JsonReader(new StringReader(s));
-                        Gson gson = new Gson();
-                        List<Repo> list = gson.fromJson(jsonReader, type);
-                        return list;
+                    public void accept(UserBean userBean) throws Exception {
+                        Log.e("H", userBean.toString());
                     }
-                })
-                .compose(RxUtil.<List<Repo>>io_main())
-                .subscribe(new Consumer<List<Repo>>() {
+                }, new Consumer<Throwable>() {
                     @Override
-                    public void accept(List<Repo> repos) throws Exception {
-                        Log.d("REPO: ", repos.get(0).toString());
+                    public void accept(Throwable throwable) throws Exception {
+                        Log.e("H", throwable.getMessage());
                     }
                 });
-    }
 
+        final Type type = new TypeToken<List<Repo>>() {
+        }.getType();
+        findViewById(R.id.button).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                RxHttp.getInstance()
+                        .useEntity(true)
+                        .addPrimaryHeader("Nihao", "Enen")
+                        .postJson("index")
+                        .map(new Function<ResponseBody, String>() {
+                            @Override
+                            public String apply(ResponseBody responseBody) throws Exception {
+                                return responseBody.string();
+                            }
+                        })
+                        .compose(RxHttp.getInstance().<String,UserBean>convert(UserBean.class))
+                        .compose(RxUtil.<UserBean>io_main())
+                        .subscribe(new Consumer<UserBean>() {
+                            @Override
+                            public void accept(UserBean userBean) throws Exception {
+                                Log.d("H", userBean.toString());
+                            }
+                        }, new Consumer<Throwable>() {
+                            @Override
+                            public void accept(Throwable throwable) throws Exception {
+                                Log.d("H",throwable.getMessage());
+                            }
+                        });
+            }
+        });
+    }
 }

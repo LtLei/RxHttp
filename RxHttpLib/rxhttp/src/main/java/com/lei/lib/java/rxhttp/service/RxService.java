@@ -8,12 +8,15 @@ import okhttp3.MultipartBody;
 import okhttp3.RequestBody;
 import okhttp3.ResponseBody;
 import retrofit2.http.Body;
+import retrofit2.http.DELETE;
 import retrofit2.http.FieldMap;
 import retrofit2.http.FormUrlEncoded;
 import retrofit2.http.GET;
 import retrofit2.http.Headers;
 import retrofit2.http.Multipart;
+import retrofit2.http.PATCH;
 import retrofit2.http.POST;
+import retrofit2.http.PUT;
 import retrofit2.http.Part;
 import retrofit2.http.PartMap;
 import retrofit2.http.Path;
@@ -71,6 +74,36 @@ public interface RxService {
             @Path(value = "path", encoded = true) String path,
             @Body RequestBody body
     );
+
+    /**
+     * 发起Put请求，在服务端更新资源（客户端提供完整的改变后的资源）
+     *
+     * @param path 除BaseURL外的相对路径
+     * @param map  提交的参数
+     * @return
+     */
+    @PUT("{path}")
+    Observable<ResponseBody> put(@Path(value = "path", encoded = true) String path, @QueryMap Map<String, String> map);
+
+    /**
+     * 发起Patch请求，在服务端更新资源（客户端提供改变的属性）
+     *
+     * @param path 除BaseURL外的相对路径
+     * @param map  提交的参数
+     * @return
+     */
+    @PATCH("{path}")
+    Observable<ResponseBody> patch(@Path(value = "path", encoded = true) String path, @QueryMap Map<String, String> map);
+
+    /**
+     * 发起Delete请求，从服务端删除资源
+     *
+     * @param path 除BaseURL外的相对路径
+     * @param map  提交的参数
+     * @return
+     */
+    @DELETE("{path}")
+    Observable<ResponseBody> delete(@Path(value = "path", encoded = true) String path, @QueryMap Map<String, String> map);
 
     @Multipart
     @POST

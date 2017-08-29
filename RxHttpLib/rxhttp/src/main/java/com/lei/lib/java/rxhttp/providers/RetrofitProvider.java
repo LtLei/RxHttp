@@ -30,7 +30,7 @@ public class RetrofitProvider {
     private Class<?> apiService;
 
     public RetrofitProvider() {
-        retrofitBuilder = new Retrofit.Builder();
+
     }
 
     public RetrofitProvider(Retrofit.Builder retrofitBuilder) {
@@ -68,6 +68,7 @@ public class RetrofitProvider {
         this.apiService=Utilities.checkNotNull(apiService,"apiService is null.");
     }
     public void generateBuilder() {
+        retrofitBuilder = new Retrofit.Builder();
         //校验URL
         if (!baseStringUrl.isEmpty() && baseHttpUrl != null) {
             //二次定义了
@@ -117,6 +118,9 @@ public class RetrofitProvider {
     }
 
     public Retrofit.Builder getRetrofitBuilder() {
+        if (retrofitBuilder==null){
+            generateBuilder();
+        }
         return retrofitBuilder;
     }
 

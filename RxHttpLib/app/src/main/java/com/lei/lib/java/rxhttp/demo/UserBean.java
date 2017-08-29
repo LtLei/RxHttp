@@ -5,30 +5,30 @@ package com.lei.lib.java.rxhttp.demo;
  */
 
 public class UserBean {
-    private String user_name;
-    private String user_pass;
+    private String name;
+    private String pass;
 
-    public void setUser_pass(String user_pass) {
-        this.user_pass = user_pass;
+    public String getName() {
+        return name;
     }
 
-    public void setUser_name(String user_name) {
-        this.user_name = user_name;
+    public void setName(String name) {
+        this.name = name;
     }
 
-    public String getUser_name() {
-        return user_name;
+    public String getPass() {
+        return pass;
     }
 
-    public String getUser_pass() {
-        return user_pass;
+    public void setPass(String pass) {
+        this.pass = pass;
     }
 
     @Override
     public String toString() {
         return "UserBean{" +
-                "user_name='" + user_name + '\'' +
-                ", user_pass='" + user_pass + '\'' +
+                "name='" + name + '\'' +
+                ", pass='" + pass + '\'' +
                 '}';
     }
 }

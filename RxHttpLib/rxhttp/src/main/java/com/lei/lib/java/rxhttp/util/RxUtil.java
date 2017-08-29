@@ -24,18 +24,29 @@ import okhttp3.ResponseBody;
 public class RxUtil {
     private static Gson gson = new Gson();
 
-    public static <T> ObservableTransformer<ResponseBody, T> data_with_entity(final Type type) {
-        return new ObservableTransformer<ResponseBody, T>() {
+    public static <S,T> ObservableTransformer<S, T> data_with_entity(final Type type) {
+        return new ObservableTransformer<S, T>() {
             @Override
-            public ObservableSource<T> apply(Observable<ResponseBody> upstream) {
-                return upstream.flatMap(new Function<ResponseBody, ObservableSource<T>>() {
+            public ObservableSource<T> apply(Observable<S> upstream) {
+                return upstream.flatMap(new Function<S, ObservableSource<T>>() {
                     @Override
-                    public ObservableSource<T> apply(ResponseBody responseBody) throws Exception {
-                        JsonReader jsonReader = new JsonReader(new InputStreamReader(responseBody.byteStream()));
+                    public ObservableSource<T> apply(S s) throws Exception {
+                        JsonReader jsonReader = null;
+                        if (s instanceof ResponseBody) {
+                            jsonReader = new JsonReader(new InputStreamReader(((ResponseBody) s).byteStream()));
+                        }else if (s instanceof String){
+                            jsonReader = new JsonReader(new StringReader((String) s));
+                        }else if (s instanceof InputStream){
+                            jsonReader = new JsonReader(new InputStreamReader((InputStream) s));
+                        }else {
+                            throw new IllegalArgumentException("Unknown UpStream");
+                        }
 
                         Type type1 = GsonUtil.type(RxEntity.class, type);
                         RxEntity<T> rxEntity = gson.fromJson(jsonReader, type1);
+                        if (rxEntity.getCode()==2000)
                         return Observable.just(rxEntity.getData());
+                        else throw new Exception("MSSSSSSSSSSSS");
                     }
                 });
             }

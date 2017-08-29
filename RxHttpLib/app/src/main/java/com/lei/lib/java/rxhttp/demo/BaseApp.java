@@ -14,8 +14,8 @@ public class BaseApp extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
-        System.setProperty("http.proxyHost", "192.168.1.115");   //个人测试网络时用的，删掉即可
-        System.setProperty("http.proxyPort", "8888");
+//        System.setProperty("http.proxyHost", "192.168.1.115");   //个人测试网络时用的，删掉即可
+//        System.setProperty("http.proxyPort", "8888");
 
         RxHttp.init(this);
         //log相关
@@ -29,7 +29,7 @@ public class BaseApp extends Application {
                 .addNetworkInterceptor(loggingInterceptor)
                 .addCommonHeader("Name", "Lei")
 //                .setBaseUrl("https://api.github.com/")
-                .setBaseUrl("http://192.168.1.111:8005/")
+                .setBaseUrl("http://127.0.0.1:8090/")
                 .useEntity(false);
     }
 }
