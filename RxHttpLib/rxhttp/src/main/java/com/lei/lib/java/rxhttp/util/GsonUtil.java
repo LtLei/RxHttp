@@ -1,6 +1,7 @@
 package com.lei.lib.java.rxhttp.util;
 
 import com.google.gson.Gson;
+import com.google.gson.stream.JsonReader;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -12,6 +13,12 @@ import java.lang.reflect.Type;
  */
 
 public class GsonUtil {
+    private static Gson gson;
+
+    static {
+        gson = new Gson();
+    }
+
     public static ParameterizedType type(final Class raw, final Type... args) {
         return new ParameterizedType() {
             public Type getRawType() {
@@ -26,5 +33,9 @@ public class GsonUtil {
                 return null;
             }
         };
+    }
+
+    public static <T> T fromJson(JsonReader reader, Type type) {
+        return gson.fromJson(reader, type);
     }
 }

@@ -20,14 +20,11 @@ public class HeadInterceptor implements Interceptor {
     public Response intercept(Chain chain) throws IOException {
         Request.Builder builder = chain.request().newBuilder();
         Request request = null;
-        Headers.Builder headersBuilder=new Headers.Builder();
+        Headers.Builder headersBuilder = new Headers.Builder();
         for (String key : headers.keySet()) {
-            headersBuilder.add(key,headers.get(key));
+            headersBuilder.add(key, headers.get(key));
         }
-//        for (String key : headers.keySet()) {
-//            request = builder.header(key, headers.get(key))
-//                    .build();
-//        }
+
         request = builder.headers(headersBuilder.build()).build();
         return chain.proceed(request);
     }

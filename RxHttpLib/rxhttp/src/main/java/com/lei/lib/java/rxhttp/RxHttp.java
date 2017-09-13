@@ -429,14 +429,6 @@ public class RxHttp {
         return null;
     }
 
-    public <S, T> ObservableTransformer<S, T> convert(Type type) {
-        if (commonProvider.isUseEntity()) {
-            return RxUtil.data_with_entity(type);
-        } else {
-            return RxUtil.data_no_entity(type);
-        }
-    }
-
     private Observable<ResponseBody> request1(HttpMethod httpMethod, String path) {
         commonProvider.getOkHttpProvider().setHeaders(getAllHeaders());
         commonProvider.generate();

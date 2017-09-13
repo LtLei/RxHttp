@@ -4,11 +4,12 @@ package com.lei.lib.java.rxhttp.entity;
  * Created by rymyz on 2017/8/28.
  */
 
-public class RxEntity<T> {
+public class RxEntity<T> implements IEntity {
     private int code;
     private String msg;
     private T data;
 
+    @Override
     public int getCode() {
         return code;
     }
@@ -16,7 +17,7 @@ public class RxEntity<T> {
     public void setCode(int code) {
         this.code = code;
     }
-
+    @Override
     public String getMsg() {
         return msg;
     }
@@ -24,9 +25,13 @@ public class RxEntity<T> {
     public void setMsg(String msg) {
         this.msg = msg;
     }
-
+    @Override
     public T getData() {
         return data;
+    }
+    @Override
+    public boolean isOk() {
+        return 2000==code;
     }
 
     @Override
