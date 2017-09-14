@@ -2,38 +2,32 @@ package com.lei.lib.java.rxhttp;
 
 import android.app.Application;
 
-import com.google.gson.Gson;
+import com.lei.lib.java.rxcache.converter.GsonConverter;
 import com.lei.lib.java.rxcache.converter.IConverter;
 import com.lei.lib.java.rxcache.mode.CacheMode;
 import com.lei.lib.java.rxhttp.method.CacheMethod;
-import com.lei.lib.java.rxhttp.method.HttpMethod;
-import com.lei.lib.java.rxhttp.providers.CommonProvider;
-import com.lei.lib.java.rxhttp.providers.PrimaryProvider;
-import com.lei.lib.java.rxhttp.service.RxService;
-import com.lei.lib.java.rxhttp.util.RxUtil;
+import com.lei.lib.java.rxhttp.request.DeleteRequest;
+import com.lei.lib.java.rxhttp.request.GetRequest;
+import com.lei.lib.java.rxhttp.request.PatchRequest;
+import com.lei.lib.java.rxhttp.request.PostJsonRequest;
+import com.lei.lib.java.rxhttp.request.PostRequest;
+import com.lei.lib.java.rxhttp.request.PutRequest;
 import com.lei.lib.java.rxhttp.util.Utilities;
 
-import org.json.JSONObject;
-
 import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.X509TrustManager;
 
-import io.reactivex.Observable;
 import io.reactivex.ObservableTransformer;
-import io.reactivex.functions.Function;
 import okhttp3.Authenticator;
 import okhttp3.CookieJar;
 import okhttp3.HttpUrl;
 import okhttp3.Interceptor;
-import okhttp3.MediaType;
-import okhttp3.OkHttpClient;
-import okhttp3.RequestBody;
 import okhttp3.ResponseBody;
 import retrofit2.CallAdapter;
 import retrofit2.Converter;
@@ -45,432 +39,421 @@ import retrofit2.Converter;
  */
 
 public class RxHttp {
-    //==============================================================
-    //                           init方法
-    //==============================================================
+    //about init()
     private static Application mContext;
-    private Gson mGson;
 
     public static void init(Application context) {
         mContext = Utilities.checkNotNull(context, "context is null.");
     }
 
-    private static void assertInit() {
-        Utilities.checkNotNull(mContext, "context is null, you may call init() first in you application.");
+    //about singleton
+    private static class SingletonHolder {
+        private static final RxHttp instance = new RxHttp();
     }
 
-    //==================================================================
-    //                             单例化
-    //==================================================================
-    private static RxHttp instance = null;
 
     public static RxHttp getInstance() {
-        if (instance == null) {
-            synchronized (RxHttp.class) {
-                if (instance == null) {
-                    instance = new RxHttp();
-                }
-            }
-        }
-        return instance;
+        return SingletonHolder.instance;
     }
 
     private RxHttp() {
-        assertInit();
-        mGson = new Gson();
-        commonProvider = new CommonProvider(mContext);
-        primaryProvider = new PrimaryProvider();
+        Utilities.checkNotNull(mContext, "context is null, you may call init() in your application first.");
     }
 
-    private CommonProvider commonProvider;
-    private PrimaryProvider primaryProvider;
+    //common settings
+    private boolean debug = true;
+    private LinkedHashMap<String, String> commonHeaders = new LinkedHashMap<>();
+    private LinkedHashMap<String, String> commonParams = new LinkedHashMap<>();
+    private CacheMethod commonCacheMethod = CacheMethod.ONLY_NET;
+    private boolean useEntity = true;
+    private ObservableTransformer<ResponseBody, String> responseBodyStringObservableTransformer;
+    private Class<?> clazz;
 
-    //=============================================================
-    //                  所有的全局设置
-    //===========================================================
-    public RxHttp debug(boolean debug) {
-        commonProvider.setDebug(debug);
+    public RxHttp convertBefore(ObservableTransformer<ResponseBody, String> transformer) {
+        Utilities.checkNotNull(transformer, "transformer is null.");
+        this.responseBodyStringObservableTransformer = transformer;
         return this;
     }
 
-    public RxHttp setCommonCacheMethod(CacheMethod cacheMethod) {
-        commonProvider.setCacheMethod(cacheMethod);
+    public ObservableTransformer<ResponseBody, String> getResponseBodyStringObservableTransformer() {
+        return responseBodyStringObservableTransformer;
+    }
+
+    public boolean isDebug() {
+        return debug;
+    }
+
+    public RxHttp setDebug(boolean debug) {
+        this.debug = debug;
         return this;
     }
 
-//    public <T> RxHttp setCommonApiService(Class<T> apiService) {
-//        commonProvider.setApiService(apiService);
-//        return this;
-//    }
+    public RxHttp setEntity(Class<?> entityClass) {
+        Utilities.checkNotNull(entityClass, "class of entity is null.");
+        this.clazz = entityClass;
+        return this;
+    }
 
-    public RxHttp addCommonHeader(String key, String value) {
-        commonProvider.addHeader(key, value);
+    public Class<?> getEntityClass() {
+        return clazz;
+    }
+
+    public LinkedHashMap<String, String> getCommonHeaders() {
+        return commonHeaders;
+    }
+
+    public RxHttp addCommonHeader(String key, String content) {
+        Utilities.checkNullOrEmpty(key, "key is null or empty");
+        this.commonHeaders.put(key, content);
         return this;
     }
 
     public RxHttp addCommonHeaders(LinkedHashMap<String, String> headers) {
-        commonProvider.addHeaders(headers);
+        Utilities.checkNotNull(headers, "headers is null.");
+        this.commonHeaders.putAll(headers);
         return this;
     }
 
     public RxHttp removeCommonHeader(String key) {
-        commonProvider.removeHeader(key);
+        Utilities.checkNullOrEmpty(key, "key is null or empty.");
+        this.commonHeaders.remove(key);
         return this;
     }
 
-    public RxHttp clearCommonHeaders() {
-        commonProvider.clearHeaders();
+    public RxHttp removeAllCommonHeaders() {
+        this.commonHeaders.clear();
         return this;
     }
 
-    public RxHttp addCommonParam(String key, String value) {
-        commonProvider.addParam(key, value);
+
+    public LinkedHashMap<String, String> getCommonParams() {
+        return commonParams;
+    }
+
+    public RxHttp addCommonParam(String key, String content) {
+        Utilities.checkNullOrEmpty(key, "key is null or empty.");
+        this.commonParams.put(key, content);
         return this;
     }
 
     public RxHttp addCommonParams(LinkedHashMap<String, String> params) {
-        commonProvider.addParams(params);
+        Utilities.checkNotNull(params, "params is null");
+        this.commonParams.putAll(params);
         return this;
     }
 
     public RxHttp removeCommonParam(String key) {
-        commonProvider.removeParam(key);
+        Utilities.checkNullOrEmpty(key, "key is null or empty.");
+        this.commonParams.remove(key);
         return this;
     }
 
-    public RxHttp clearCommonParams() {
-        commonProvider.clearParams();
+    public RxHttp removeAllCommonParams() {
+        this.commonParams.clear();
         return this;
     }
 
-    //okhttp settings
-
-    /**
-     * 设置链接超时时间
-     *
-     * @param connectTimeout
-     * @return
-     */
-    public RxHttp setConnectTimeout(long connectTimeout) {
-        commonProvider.getOkHttpProvider().setConnectTimeout(connectTimeout);
-        return this;
+    public CacheMethod getCommonCacheMethod() {
+        return commonCacheMethod;
     }
 
-    /**
-     * 设置读取超时时间
-     *
-     * @param readTimeout
-     */
-    public RxHttp setReadTimeout(long readTimeout) {
-        commonProvider.getOkHttpProvider().setReadTimeout(readTimeout);
-        return this;
+    public void setCommonCacheMethod(CacheMethod cacheMethod) {
+        this.commonCacheMethod = cacheMethod;
     }
 
-    /**
-     * 设置写入超时时间
-     *
-     * @param writeTimeout
-     */
-    public RxHttp setWriteTimeout(long writeTimeout) {
-        commonProvider.getOkHttpProvider().setWriteTimeout(writeTimeout);
-        return this;
-    }
-
-    /**
-     * 添加拦截器
-     *
-     * @param interceptor
-     * @return
-     */
-    public RxHttp addInterceptor(Interceptor interceptor) {
-        commonProvider.getOkHttpProvider().addInterceptor(interceptor);
-        return this;
-    }
-
-    /**
-     * 批量添加拦截器
-     *
-     * @param interceptors
-     * @return
-     */
-    public RxHttp addInterceptors(List<Interceptor> interceptors) {
-        commonProvider.getOkHttpProvider().addInterceptors(interceptors);
-        return this;
-    }
-
-    /**
-     * 添加网络拦截器
-     *
-     * @param networkInterceptor
-     * @return
-     */
-    public RxHttp addNetworkInterceptor(Interceptor networkInterceptor) {
-        commonProvider.getOkHttpProvider().addNetworkInterceptor(networkInterceptor);
-        return this;
-    }
-
-    /**
-     * 批量添加网络拦截器
-     *
-     * @param networkInterceptors
-     * @return
-     */
-    public RxHttp addNetworkInterceptors(List<Interceptor> networkInterceptors) {
-        commonProvider.getOkHttpProvider().addNetworkInterceptors(networkInterceptors);
-        return this;
-    }
-
-    /**
-     * 设置认证
-     *
-     * @param authenticator
-     * @return
-     */
-    public RxHttp setAuthenticator(Authenticator authenticator) {
-        commonProvider.getOkHttpProvider().setAuthenticator(authenticator);
-        return this;
-    }
-
-    /**
-     * 设置CookieJar
-     *
-     * @param cookieJar
-     */
-    public RxHttp setCookieJar(CookieJar cookieJar) {
-        commonProvider.getOkHttpProvider().setCookieJar(cookieJar);
-        return this;
-    }
-
-    /**
-     * 服务器证书验证
-     *
-     * @param hostnameVerifier
-     */
-    public RxHttp setHostnameVerifier(HostnameVerifier hostnameVerifier) {
-        commonProvider.getOkHttpProvider().setHostnameVerifier(hostnameVerifier);
-        return this;
-    }
-
-    public RxHttp setSslSocketFactory(SSLSocketFactory sslSocketFactory, X509TrustManager x509TrustManager) {
-        commonProvider.getOkHttpProvider().setSslSocketFactory(sslSocketFactory, x509TrustManager);
-        return this;
-    }
-
-    //retrofit settings
-
-    /**
-     * 设置baseUrl，请以/结尾，不要以/开头
-     *
-     * @param url
-     */
-    public RxHttp setBaseUrl(String url) {
-        commonProvider.getRetrofitProvider().setBaseUrl(url);
-        return this;
-    }
-
-    public RxHttp setBaseUrl(HttpUrl httpUrl) {
-        commonProvider.getRetrofitProvider().setBaseUrl(httpUrl);
-        return this;
-    }
-
-    public RxHttp addCallAdapterFactory(CallAdapter.Factory factory) {
-        commonProvider.getRetrofitProvider().addCallAdapterFactory(factory);
-        return this;
-    }
-
-    public RxHttp addCallAdapterFactories(List<CallAdapter.Factory> factories) {
-        commonProvider.getRetrofitProvider().addCallAdapterFactories(factories);
-        return this;
-    }
-
-    public RxHttp addConverterFactory(Converter.Factory factory) {
-        commonProvider.getRetrofitProvider().addConverterFactory(factory);
-        return this;
-    }
-
-    public RxHttp addConverterFactories(List<Converter.Factory> factories) {
-        commonProvider.getRetrofitProvider().addConverterFactories(factories);
-        return this;
-    }
-
-    public RxHttp setClient(OkHttpClient okHttpClient) {
-        commonProvider.getRetrofitProvider().setClient(okHttpClient);
-        return this;
-    }
-
-    //cache settings
-
-    public RxHttp setCacheMode(CacheMode cacheMode) {
-        commonProvider.getCacheProvider().setCacheMode(cacheMode);
-        return this;
-    }
-
-    public RxHttp setConverter(IConverter converter) {
-        commonProvider.getCacheProvider().setConverter(converter);
-        return this;
-    }
-
-    public RxHttp setMemoryCacheSizeByMB(int memoryCacheSizeByMB) {
-        commonProvider.getCacheProvider().setMemoryCacheSizeByMB(memoryCacheSizeByMB);
-        return this;
-    }
-
-    public RxHttp setDiskCacheSizeByMB(int diskCacheSizeByMB) {
-        commonProvider.getCacheProvider().setDiskCacheSizeByMB(diskCacheSizeByMB);
-        return this;
+    public boolean isUseEntity() {
+        return useEntity;
     }
 
     public RxHttp useEntity(boolean useEntity) {
-        commonProvider.setUseEntity(useEntity);
+        this.useEntity = useEntity;
         return this;
+    }
+
+    //about okhttp
+    private static final long DEFAULT_TIMEOUT = 60 * 1000;
+    private long connectTimeout = DEFAULT_TIMEOUT;
+    private long readTimeout = DEFAULT_TIMEOUT;
+    private long writeTimeout = DEFAULT_TIMEOUT;
+    private List<Interceptor> interceptors = new ArrayList<Interceptor>();
+    private List<Interceptor> netInterceptors = new ArrayList<Interceptor>();
+    private Authenticator authenticator;
+    private CookieJar cookieJar;
+    private HostnameVerifier hostnameVerifier;
+    private SSLSocketFactory sslSocketFactory;
+    private X509TrustManager x509TrustManager;
+
+    public long getConnectTimeout() {
+        return connectTimeout;
+    }
+
+    public RxHttp setConnectTimeout(long connectTimeout) {
+        if (connectTimeout <= 0) connectTimeout = 0;
+        this.connectTimeout = connectTimeout;
+        return this;
+    }
+
+    public long getReadTimeout() {
+        return readTimeout;
+    }
+
+    public RxHttp setReadTimeout(long readTimeout) {
+        if (readTimeout <= 0) readTimeout = 0;
+        this.readTimeout = readTimeout;
+        return this;
+    }
+
+    public long getWriteTimeout() {
+        return writeTimeout;
+    }
+
+    public RxHttp setWriteTimeout(long writeTimeout) {
+        if (writeTimeout <= 0) writeTimeout = 0;
+        this.writeTimeout = writeTimeout;
+        return this;
+    }
+
+    public List<Interceptor> getInterceptors() {
+        return interceptors;
+    }
+
+    public RxHttp addInterceptor(Interceptor interceptor) {
+        Utilities.checkNotNull(interceptor, "interceptor is null.");
+        this.interceptors.add(interceptor);
+        return this;
+    }
+
+    public RxHttp addInterceptors(List<Interceptor> interceptors) {
+        Utilities.checkNotNull(interceptors, "interceptors is null.");
+        this.interceptors.addAll(interceptors);
+        return this;
+    }
+
+    public List<Interceptor> getNetInterceptors() {
+        return netInterceptors;
+    }
+
+    public RxHttp addNetInterceptor(Interceptor netInterceptor) {
+        Utilities.checkNotNull(netInterceptor, "netInterceptor is null.");
+        this.netInterceptors.add(netInterceptor);
+        return this;
+    }
+
+    public RxHttp addNetInterceptors(List<Interceptor> netInterceptors) {
+        Utilities.checkNotNull(netInterceptors, "netInterceptors is null.");
+        this.netInterceptors.addAll(netInterceptors);
+        return this;
+    }
+
+    public Authenticator getAuthenticator() {
+        return authenticator;
+    }
+
+    public RxHttp setAuthenticator(Authenticator authenticator) {
+        this.authenticator = Utilities.checkNotNull(authenticator, "authenticator is null");
+        return this;
+    }
+
+    public CookieJar getCookieJar() {
+        return cookieJar;
+    }
+
+    public RxHttp setCookieJar(CookieJar cookieJar) {
+        this.cookieJar = Utilities.checkNotNull(cookieJar, "cookieJar is null.");
+        return this;
+    }
+
+    public HostnameVerifier getHostnameVerifier() {
+        return hostnameVerifier;
+    }
+
+    public RxHttp setHostnameVerifier(HostnameVerifier hostnameVerifier) {
+        this.hostnameVerifier = Utilities.checkNotNull(hostnameVerifier, "hostnameVerifier is null.");
+        return this;
+    }
+
+    public SSLSocketFactory getSslSocketFactory() {
+        return sslSocketFactory;
+    }
+
+    public RxHttp setSslSocketFactory(SSLSocketFactory sslSocketFactory) {
+        this.sslSocketFactory = Utilities.checkNotNull(sslSocketFactory, "sslSocketFactory is null.");
+        return this;
+    }
+
+    public X509TrustManager getX509TrustManager() {
+        return x509TrustManager;
+    }
+
+    public RxHttp setX509TrustManager(X509TrustManager x509TrustManager) {
+        this.x509TrustManager = Utilities.checkNotNull(x509TrustManager, "x509TrustManager is null.");
+        return this;
+    }
+
+    //about retrofit
+    private String baseStringUrl = "";
+    private HttpUrl baseHttpUrl;
+    private List<CallAdapter.Factory> callAdapterFactories = new ArrayList<>();
+    private List<Converter.Factory> converterFactories = new ArrayList<>();
+    private Class<?> apiService;
+
+    public String getBaseStringUrl() {
+        return baseStringUrl;
+    }
+
+    public RxHttp setBaseUrl(String baseUrl) {
+        Utilities.checkNullOrEmpty(baseUrl, "baseUrl is null or empty.");
+        this.baseStringUrl = baseUrl;
+        return this;
+    }
+
+    public HttpUrl getBaseHttpUrl() {
+        return baseHttpUrl;
+    }
+
+    public RxHttp setBaseUrl(HttpUrl baseUrl) {
+        Utilities.checkNotNull(baseUrl, "baseUrl is null.");
+        this.baseHttpUrl = baseUrl;
+        return this;
+    }
+
+    public List<CallAdapter.Factory> getCallAdapterFactories() {
+        return callAdapterFactories;
+    }
+
+    public RxHttp addCallAdapterFactory(CallAdapter.Factory factory) {
+        Utilities.checkNotNull(factory, "factory is null.");
+        this.callAdapterFactories.add(factory);
+        return this;
+    }
+
+    public RxHttp addCallAdapterFactories(List<CallAdapter.Factory> callAdapterFactories) {
+        Utilities.checkNotNull(callAdapterFactories, "callAdapterFactories is null.");
+        this.callAdapterFactories.addAll(callAdapterFactories);
+        return this;
+    }
+
+    public List<Converter.Factory> getConverterFactories() {
+        return converterFactories;
+    }
+
+    public RxHttp addConverterFactoty(Converter.Factory factory) {
+        Utilities.checkNotNull(factory, "factory is null.");
+        this.converterFactories.add(factory);
+        return this;
+    }
+
+    public RxHttp addConverterFactories(List<Converter.Factory> converterFactories) {
+        Utilities.checkNotNull(converterFactories, "converterFactories is null.");
+        this.converterFactories.addAll(converterFactories);
+        return this;
+    }
+
+    public Class<?> getApiService() {
+        return apiService;
+    }
+
+    public RxHttp setApiService(Class<?> apiService) {
+        Utilities.checkNotNull(apiService, "apiService is null.");
+        this.apiService = apiService;
+        return this;
+    }
+
+    //about rxcache
+    private CacheMode cacheMode = CacheMode.BOTH;
+    private IConverter converter = new GsonConverter();
+    private int memoryCacheSizeByMB = (int) (Runtime.getRuntime().maxMemory() / 8 / 1024 / 1024);
+    private int diskCacheSizeByMB = 100;
+    private String diskDirName = "RxHttp";
+
+    public CacheMode getCacheMode() {
+        return cacheMode;
+    }
+
+    public RxHttp setCacheMode(CacheMode cacheMode) {
+        Utilities.checkNotNull(cacheMode, "cacheMode is null.");
+        this.cacheMode = cacheMode;
+        return this;
+    }
+
+    public IConverter getConverter() {
+        return converter;
+    }
+
+    public RxHttp setConverter(IConverter converter) {
+        Utilities.checkNotNull(converter, "converter is null.");
+        this.converter = converter;
+        return this;
+    }
+
+    public int getMemoryCacheSizeByMB() {
+        return memoryCacheSizeByMB;
+    }
+
+    public RxHttp setMemoryCacheSizeByMB(int memoryCacheSizeByMB) {
+        if (memoryCacheSizeByMB <= 0) memoryCacheSizeByMB = 0;
+        this.memoryCacheSizeByMB = memoryCacheSizeByMB;
+        return this;
+    }
+
+    public int getDiskCacheSizeByMB() {
+        return diskCacheSizeByMB;
+    }
+
+    public RxHttp setDiskCacheSizeByMB(int diskCacheSizeByMB) {
+        if (diskCacheSizeByMB <= 0) diskCacheSizeByMB = 0;
+        this.diskCacheSizeByMB = diskCacheSizeByMB;
+        return this;
+    }
+
+    public String getDiskDirName() {
+        return diskDirName;
     }
 
     public RxHttp setDiskDirName(String diskDirName) {
-        commonProvider.getCacheProvider().setDiskDirName(diskDirName);
+        Utilities.checkNullOrEmpty(diskDirName, "diskDirName is null or empty.");
+        this.diskDirName = diskDirName;
         return this;
     }
 
-    //=============================================================
-    //        所有的局部设置，以下设置仅当次请求生效
-    //===========================================================
-    public RxHttp setCacheKey(String cacheKey) {
-        primaryProvider.setCacheKey(cacheKey);
-        return this;
-    }
-
-    public RxHttp setCacheTime(long cacheTime) {
-        primaryProvider.setCacheTime(cacheTime);
-        return this;
-    }
-
-    public RxHttp addPrimaryHeader(String key, String value) {
-        primaryProvider.addHeader(key, value);
-        return this;
-    }
-
-    public RxHttp addPrimaryHeaders(LinkedHashMap<String, String> headers) {
-        primaryProvider.addHeaders(headers);
-        return this;
-    }
-
-    public RxHttp removePrimaryHeader(String key) {
-        primaryProvider.removeHeader(key);
-        return this;
-    }
-
-    public RxHttp clearPrimaryHeaders() {
-        primaryProvider.clearHeaders();
-        return this;
-    }
-
-    public RxHttp addPrimaryParam(String key, String value) {
-        primaryProvider.addParam(key, value);
-        return this;
-    }
-
-    public RxHttp addPrimaryParams(LinkedHashMap<String, String> params) {
-        primaryProvider.addParams(params);
-        return this;
-    }
-
-    public RxHttp removePrimaryParam(String key) {
-        primaryProvider.removeParam(key);
-        return this;
-    }
-
-    public RxHttp clearPrimaryParams() {
-        primaryProvider.clearParams();
-        return this;
-    }
-
-    public <T> RxHttp setPrimaryApiService(Class<T> apiService) {
-        primaryProvider.setApiService(apiService);
-        return this;
-    }
-
-    public RxHttp setPrimaryCacheMethod(CacheMethod cacheMethod) {
-        primaryProvider.setCacheMethod(cacheMethod);
-        return this;
-    }
-
-    private Map<String, String> getAllParams() {
-        Map<String, String> map = new LinkedHashMap<>();
-        if (!primaryProvider.getParams().isEmpty())
-            map.putAll(primaryProvider.getParams());
-        if (!commonProvider.getParams().isEmpty())
-            map.putAll(commonProvider.getParams());
-        primaryProvider.clearParams();
-        return map;
-    }
-
-    private Map<String, String> getAllHeaders() {
-        Map<String, String> map = new LinkedHashMap<>();
-        if (!primaryProvider.getHeaders().isEmpty())
-            map.putAll(primaryProvider.getHeaders());
-        if (!commonProvider.getHeaders().isEmpty())
-            map.putAll(commonProvider.getHeaders());
-        primaryProvider.clearHeaders();
-        return map;
-    }
-
-
-    private Observable<ResponseBody> request(HttpMethod httpMethod, String path) {
-        commonProvider.getOkHttpProvider().setHeaders(getAllHeaders());
-        commonProvider.generate();
-        if (commonProvider.getApiService() instanceof RxService) {
-            switch (httpMethod) {
-                case JSON_POST:
-                    RequestBody body = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), new JSONObject(getAllParams()).toString());
-                    return ((RxService) commonProvider.getApiService()).postJson(path, body);
-            }
-//            createdObservable = ((RxService) commonProvider.getApiService()).get(path, getAllParams());
-        }
-        //暂不实现
-        return null;
-    }
-
-    private Observable<ResponseBody> request1(HttpMethod httpMethod, String path) {
-        commonProvider.getOkHttpProvider().setHeaders(getAllHeaders());
-        commonProvider.generate();
-        if (commonProvider.getApiService() instanceof RxService) {
-            switch (httpMethod) {
-                case JSON_POST:
-                    RequestBody body = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), new JSONObject(getAllParams()).toString());
-                   return ((RxService) commonProvider.getApiService()).postJson(path, body);
-                case GET:
-                    return ((RxService) commonProvider.getApiService()).get(path, getAllParams());
-            }
-//            createdObservable = ((RxService) commonProvider.getApiService()).get(path, getAllParams());
-        }
-        //暂不实现
-        return null;
-    }
-
-    Observable observable;
-
-    public RxHttp get(String path) {
-        observable = request1(HttpMethod.GET, path);
-        return this;
-    }
-
-    public  Observable<String> preConvert(Function<ResponseBody,String> function) {
-        observable=observable.map(function);
-        return observable;
-    }
-
-    public Observable<ResponseBody> postJson(String path) {
-        return request(HttpMethod.JSON_POST, path);
-    }
-
-
-//    public Observable<ResponseBody> postJson(String path) {
-//        commonProvider.getOkHttpProvider().setHeaders(getAllHeaders());
-//        commonProvider.generate();
-//
-//        if (commonProvider.getApiService() instanceof RxService) {
-//            RequestBody body = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), new JSONObject(getAllParams()).toString());
-//            return ((RxService) commonProvider.getApiService()).postJson(path, body);
-//        }
-//        return null;
+//    public GetRequest get() {
+//        return new GetRequest(mContext);
 //    }
+
+
+    public <T> GetRequest<T> get(String path, Type type) {
+        if (path == null) path = "";
+        Utilities.checkNotNull(type, "type is null.");
+        return new GetRequest<>(mContext, path, type);
+    }
+
+    public <T> PostRequest<T> post(String path, Type type) {
+        if (path == null) path = "";
+        Utilities.checkNotNull(type, "type is null.");
+        return new PostRequest<>(mContext, path, type);
+    }
+
+    public <T> PostJsonRequest<T> postJson(String path, Type type) {
+        if (path == null) path = "";
+        Utilities.checkNotNull(type, "type is null.");
+        return new PostJsonRequest<>(mContext, path, type);
+    }
+
+    public <T> PutRequest<T> put(String path, Type type) {
+        if (path == null) path = "";
+        Utilities.checkNotNull(type, "type is null.");
+        return new PutRequest<>(mContext, path, type);
+    }
+
+    public <T> PatchRequest<T> patch(String path, Type type) {
+        if (path == null) path = "";
+        Utilities.checkNotNull(type, "type is null.");
+        return new PatchRequest<>(mContext, path, type);
+    }
+
+    public <T> DeleteRequest<T> delete(String path, Type type) {
+        if (path == null) path = "";
+        Utilities.checkNotNull(type, "type is null.");
+        return new DeleteRequest<>(mContext, path, type);
+    }
 }

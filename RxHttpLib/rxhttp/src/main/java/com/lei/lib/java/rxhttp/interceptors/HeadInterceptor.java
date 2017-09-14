@@ -11,9 +11,11 @@ import okhttp3.Response;
 
 public class HeadInterceptor implements Interceptor {
     Map<String, String> headers = new HashMap<>();
+    public static final String USER_AGENT = "User-Agent";
 
     public HeadInterceptor(Map<String, String> headers) {
-        this.headers = headers;
+        if (headers != null)
+            this.headers = headers;
     }
 
     @Override
@@ -28,4 +30,5 @@ public class HeadInterceptor implements Interceptor {
         request = builder.headers(headersBuilder.build()).build();
         return chain.proceed(request);
     }
+
 }

@@ -13,13 +13,13 @@ import okhttp3.ResponseBody;
  * @author lei
  */
 
-public final class GetRequest<T> extends BaseRequest<T, GetRequest<T>> {
-    public GetRequest(Application context, String path, Type type) {
+public final class PostRequest<T> extends BaseRequest<T, PostRequest<T>> {
+    public PostRequest(Application context, String path, Type type) {
         super(context, path, type);
     }
 
     @Override
     protected Observable<ResponseBody> netObservable() {
-        return getApiService().get(getRequestUrl(), getParams());
+        return getApiService().post(getRequestUrl(), getParams());
     }
 }

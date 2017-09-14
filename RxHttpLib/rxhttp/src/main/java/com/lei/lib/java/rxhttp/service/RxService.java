@@ -58,7 +58,7 @@ public interface RxService {
     @POST("{path}")
     Observable<ResponseBody> post(
             @Path(value = "path", encoded = true) String path,
-            @FieldMap() Map<String, Object> map
+            @FieldMap() Map<String, String> map
     );
 
     /**
@@ -110,5 +110,12 @@ public interface RxService {
     Observable<ResponseBody> uploadFiles(
             @Url String url,
             @PartMap() Map<String, String> description,
-            @Part List<MultipartBody.Part> bodys);
+            @Part List<MultipartBody.Part> bodies);
+
+    @Multipart
+    @POST
+    Observable<ResponseBody> uploadFiles(
+            @Url String url,
+            @PartMap() Map<String, String> description,
+            @PartMap() Map<String, RequestBody> bodies);
 }

@@ -2,25 +2,20 @@ package com.lei.lib.java.rxhttp.request;
 
 import android.app.Application;
 
-import com.google.gson.stream.JsonReader;
 import com.lei.lib.java.rxcache.RxCache;
 import com.lei.lib.java.rxcache.entity.CacheResponse;
 import com.lei.lib.java.rxcache.util.LogUtil;
 import com.lei.lib.java.rxcache.util.RxUtil;
-import com.lei.lib.java.rxhttp.RxHttp1;
-import com.lei.lib.java.rxhttp.entity.IEntity;
+import com.lei.lib.java.rxhttp.RxHttp;
 import com.lei.lib.java.rxhttp.entity.RxEntity;
 import com.lei.lib.java.rxhttp.entity.RxResponse;
 import com.lei.lib.java.rxhttp.exception.ApiException;
 import com.lei.lib.java.rxhttp.interceptors.HeadInterceptor;
 import com.lei.lib.java.rxhttp.method.CacheMethod;
 import com.lei.lib.java.rxhttp.service.RxService;
-import com.lei.lib.java.rxhttp.util.GsonUtil;
+import com.lei.lib.java.rxhttp.util.ResponseConvert;
 import com.lei.lib.java.rxhttp.util.Utilities;
 
-import java.io.Reader;
-import java.io.StringReader;
-import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.LinkedHashMap;
 import java.util.concurrent.TimeUnit;
@@ -35,6 +30,7 @@ import io.reactivex.functions.Function;
 import okhttp3.OkHttpClient;
 import okhttp3.ResponseBody;
 import retrofit2.Retrofit;
+import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
 
 /**
  * 发起请求的基类，用于配置一些共用的属性
@@ -43,15 +39,17 @@ import retrofit2.Retrofit;
  * @since 2017年9月11日
  */
 
-public abstract class BaseRequest {
+public abstract class BaseRequest<T, R extends BaseRequest<T, R>> {
     private LinkedHashMap<String, String> headers = new LinkedHashMap<>();
     private LinkedHashMap<String, String> params = new LinkedHashMap<>();
     private CacheMethod cacheMethod;
     private boolean useEntity;
+    private Class<?> clazz;
     private boolean debug;
 
     private Type type;
     private boolean forceNet;
+    private ResponseConvert<T> responseConvert;
 
     private ObservableTransformer<ResponseBody, String> transformer;
 
@@ -62,18 +60,18 @@ public abstract class BaseRequest {
     private String requestUrl;
     private long cacheTime = -1;
     private String cacheKey;
-    private Class<?> clazz;
 
-    public BaseRequest(Application context) {
-//        Type genType = getClass().getGenericSuperclass();
-//        type = ((ParameterizedType) genType).getActualTypeArguments()[0];
+    public BaseRequest(Application context, String path, Type type) {
+        this.requestUrl = path;
+        this.type = type;
 
-        RxHttp1 rxHttp = RxHttp1.getInstance();
+        RxHttp rxHttp = RxHttp.getInstance();
 
         headers.putAll(rxHttp.getCommonHeaders());
         params.putAll(rxHttp.getCommonParams());
         cacheMethod = rxHttp.getCommonCacheMethod();
         useEntity = rxHttp.isUseEntity();
+        clazz = rxHttp.getEntityClass() == null ? RxEntity.class : rxHttp.getEntityClass();
         debug = rxHttp.isDebug();
 
         transformer = rxHttp.getResponseBodyStringObservableTransformer();
@@ -112,6 +110,9 @@ public abstract class BaseRequest {
             retrofitBuilder.baseUrl(rxHttp.getBaseStringUrl());
         else retrofitBuilder.baseUrl(rxHttp.getBaseHttpUrl());
 
+        if (rxHttp.getCallAdapterFactories().size() == 0) {
+            rxHttp.addCallAdapterFactory(RxJava2CallAdapterFactory.create());
+        }
         for (int i = 0; i < rxHttp.getCallAdapterFactories().size(); i++) {
             retrofitBuilder.addCallAdapterFactory(rxHttp.getCallAdapterFactories().get(i));
         }
@@ -131,90 +132,75 @@ public abstract class BaseRequest {
                 .setCacheMode(rxHttp.getCacheMode());
     }
 
-    public BaseRequest setEntity(Class<?> entityClass) {
-        Utilities.checkNotNull(entityClass, "class of entity is null.");
-        this.clazz = entityClass;
-        return this;
-    }
-
-    public BaseRequest setType(Type type) {
-        this.type = type;
-        return this;
-    }
-
-    public BaseRequest addHeader(String key, String content) {
+    public R addHeader(String key, String content) {
         Utilities.checkNullOrEmpty(key, "key is null or empty.");
         this.headers.put(key, content);
-        return this;
+        return (R) this;
     }
 
-    public BaseRequest addHeaders(LinkedHashMap<String, String> headers) {
+    public R addHeaders(LinkedHashMap<String, String> headers) {
         Utilities.checkNotNull(headers, "headers is null.");
         this.headers.putAll(headers);
-        return this;
+        return (R) this;
     }
 
-    public BaseRequest removeHeader(String key) {
+    public R removeHeader(String key) {
         Utilities.checkNullOrEmpty(key, "key is null or empty.");
         this.headers.remove(key);
-        return this;
+        return (R) this;
     }
 
-    public BaseRequest removeAllHeaders() {
+    public R removeAllHeaders() {
         this.headers.clear();
-        return this;
+        return (R) this;
     }
 
-    public BaseRequest addParam(String key, String content) {
+    public R addParam(String key, String content) {
         Utilities.checkNullOrEmpty(key, "key is null or empty.");
         this.params.put(key, content);
-        return this;
+        return (R) this;
     }
 
-    public BaseRequest addParams(LinkedHashMap<String, String> params) {
+    public R addParams(LinkedHashMap<String, String> params) {
         Utilities.checkNotNull(params, "params is null.");
         this.params.putAll(params);
-        return this;
+        return (R) this;
     }
 
-    public BaseRequest removeParam(String key) {
+    public R removeParam(String key) {
         Utilities.checkNullOrEmpty(key, "key is null or empty.");
         this.params.remove(key);
-        return this;
+        return (R) this;
     }
 
-    public BaseRequest removeAllParams() {
+    public R removeAllParams() {
         this.params.clear();
-        return this;
+        return (R) this;
     }
 
-    public BaseRequest cacheMethod(CacheMethod cacheMethod) {
+    public R cacheMethod(CacheMethod cacheMethod) {
         Utilities.checkNotNull(cacheMethod, "cacheMethod is null.");
         this.cacheMethod = cacheMethod;
-        return this;
+        return (R) this;
     }
 
-    public BaseRequest setCacheKey(String cacheKey) {
+    public R setCacheKey(String cacheKey) {
         Utilities.checkNullOrEmpty(cacheKey, "cacheKey is null or empty.");
         this.cacheKey = cacheKey;
-        return this;
+        return (R) this;
     }
 
-    public BaseRequest setCacheTime(long cacheTime) {
+    public R setCacheTime(long cacheTime) {
         if (cacheTime < -1) cacheTime = -1;
         this.cacheTime = cacheTime;
-        return this;
-    }
-
-    public BaseRequest setRequestUrl(String requestUrl) {
-        if (requestUrl == null) requestUrl = "";
-        this.requestUrl = requestUrl;
-        return this;
+        return (R) this;
     }
 
     protected OkHttpClient getOkHttpClient() {
-        return okBuilder
-                .addInterceptor(new HeadInterceptor(headers)).build();
+        if (!headers.containsKey(HeadInterceptor.USER_AGENT)) {
+            headers.put(HeadInterceptor.USER_AGENT, Utilities.getUserAgent());
+        }
+        return okBuilder.addInterceptor(new HeadInterceptor(headers)).build();
     }
 
     protected Retrofit getRetrofit() {
@@ -245,16 +231,26 @@ public abstract class BaseRequest {
         return cacheTime;
     }
 
-    public <T> Observable<RxResponse<T>> request() {
-        switch (cacheMethod) {
+    public CacheMethod getCacheMethod() {
+        return cacheMethod;
+    }
+
+    private ResponseConvert<T> getResponseConvert() {
+        if (responseConvert == null)
+            responseConvert = new ResponseConvert<>(clazz, type, useEntity);
+        return responseConvert;
+    }
+
+    public Observable<RxResponse<T>> request() {
+        switch (getCacheMethod()) {
             case ONLY_NET:
-                return BaseRequest.this.<T>requestOnlyNet();
+                return requestOnlyNet();
             case ONLY_CACHE:
-                return BaseRequest.this.<T>requestOnlyCache();
+                return requestOnlyCache();
             case FIRST_NET_THEN_CACHE:
-                return BaseRequest.this.<T>requestFirstNet();
+                return requestFirstNet();
             case FIRST_CACHE_THEN_NET:
-                return BaseRequest.this.<T>requestFirstCache();
+                return requestFirstCache();
             case CACHE_AND_NET:
                 return Observable.create(new ObservableOnSubscribe<Observable<RxResponse<T>>>() {
                     @Override
@@ -280,15 +276,15 @@ public abstract class BaseRequest {
 
     protected abstract Observable<ResponseBody> netObservable();
 
-    protected <T> Observable<RxResponse<T>> requestOnlyNet() {
+    protected Observable<RxResponse<T>> requestOnlyNet() {
         if (transformer != null) {
             return netObservable().compose(transformer)
-                    .compose(this.<T>handleStringResult(type, useEntity));
+                    .compose(getResponseConvert().handleStringResult());
         } else
-            return netObservable().compose(this.<T>handleResponseBodyResult(type, useEntity));
+            return netObservable().compose(getResponseConvert().handleResponseBodyResult());
     }
 
-    protected <T> Observable<RxResponse<T>> requestOnlyCache() {
+    protected Observable<RxResponse<T>> requestOnlyCache() {
         return getRxCache().<T>get(cacheKey, forceNet, type).map(new Function<CacheResponse<T>, RxResponse<T>>() {
             @Override
             public RxResponse<T> apply(CacheResponse<T> tCacheResponse) throws Exception {
@@ -298,11 +294,11 @@ public abstract class BaseRequest {
         });
     }
 
-    protected <T> Observable<RxResponse<T>> requestFirstNet() {
+    protected Observable<RxResponse<T>> requestFirstNet() {
         if (transformer != null) {
             return netObservable()
                     .compose(transformer)
-                    .compose(this.<T>handleStringResult(type, useEntity))
+                    .compose(getResponseConvert().handleStringResult())
                     .doOnNext(new Consumer<RxResponse<T>>() {
                         @Override
                         public void accept(RxResponse<T> tRxResponse) throws Exception {
@@ -320,7 +316,7 @@ public abstract class BaseRequest {
                             }));
         } else
             return netObservable()
-                    .compose(this.<T>handleResponseBodyResult(type, useEntity))
+                    .compose(getResponseConvert().handleResponseBodyResult())
                     .doOnNext(new Consumer<RxResponse<T>>() {
                         @Override
                         public void accept(RxResponse<T> tRxResponse) throws Exception {
@@ -346,11 +342,11 @@ public abstract class BaseRequest {
                     });
     }
 
-    protected <T> Observable<RxResponse<T>> requestFirstCache() {
+    protected Observable<RxResponse<T>> requestFirstCache() {
         return getRxCache().<T>get(cacheKey, forceNet, type).flatMap(this.<T>flatFuncFirstCache());
     }
 
-    protected <T> Function<CacheResponse<T>, ObservableSource<RxResponse<T>>> flatFuncFirstCache() {
+    protected Function<CacheResponse<T>, ObservableSource<RxResponse<T>>> flatFuncFirstCache() {
         return new Function<CacheResponse<T>, ObservableSource<RxResponse<T>>>() {
             @Override
             public ObservableSource<RxResponse<T>> apply(CacheResponse<T> tCacheResponse) throws Exception {
@@ -358,7 +354,7 @@ public abstract class BaseRequest {
                 if (t == null) {
                     if (transformer != null) {
                         return netObservable().compose(transformer)
-                                .compose(BaseRequest.this.<T>handleStringResult(type, useEntity)).doOnNext(new Consumer<RxResponse<T>>() {
+                                .compose(getResponseConvert().handleStringResult()).doOnNext(new Consumer<RxResponse<T>>() {
                                     @Override
                                     public void accept(RxResponse<T> tRxResponse) throws Exception {
                                         if (tRxResponse.getData() != null)
@@ -366,7 +362,7 @@ public abstract class BaseRequest {
                                     }
                                 });
                     } else
-                        return netObservable().compose(BaseRequest.this.<T>handleResponseBodyResult(type, useEntity)).doOnNext(new Consumer<RxResponse<T>>() {
+                        return netObservable().compose(getResponseConvert().handleResponseBodyResult()).doOnNext(new Consumer<RxResponse<T>>() {
                             @Override
                             public void accept(RxResponse<T> tRxResponse) throws Exception {
                                 if (tRxResponse.getData() != null) saveLocal(tRxResponse.getData());
@@ -380,7 +376,7 @@ public abstract class BaseRequest {
         };
     }
 
-    protected <T> void saveLocal(T t) {
+    protected void saveLocal(T t) {
         getRxCache().put(cacheKey, t, cacheTime)
                 .compose(RxUtil.<Boolean>io_main())
                 .subscribe(new Consumer<Boolean>() {
@@ -389,82 +385,5 @@ public abstract class BaseRequest {
                         LogUtil.i(aBoolean ? "save cache success" : "save cache failed.");
                     }
                 });
-    }
-
-    protected <T> ObservableTransformer<ResponseBody, RxResponse<T>> handleResponseBodyResult(final Type type, final boolean useEntity) {
-        return new ObservableTransformer<ResponseBody, RxResponse<T>>() {
-            @Override
-            public ObservableSource<RxResponse<T>> apply(Observable<ResponseBody> upstream) {
-                return upstream.map(new Function<ResponseBody, RxResponse<T>>() {
-                    @Override
-                    public RxResponse<T> apply(ResponseBody responseBody) throws Exception {
-                        if (useEntity) {
-                            return BaseRequest.this.<T>transformDataWithEntity(type, responseBody.charStream());
-                        } else {
-                            return BaseRequest.this.<T>transformDataNoEntity(type, responseBody.charStream());
-                        }
-                    }
-                });
-            }
-        };
-    }
-
-    protected <T> ObservableTransformer<String, RxResponse<T>> handleStringResult(final Type type, final boolean useEntity) {
-        return new ObservableTransformer<String, RxResponse<T>>() {
-            @Override
-            public ObservableSource<RxResponse<T>> apply(Observable<String> upstream) {
-                return upstream.map(new Function<String, RxResponse<T>>() {
-                    @Override
-                    public RxResponse<T> apply(String s) throws Exception {
-                        if (useEntity) {
-                            return BaseRequest.this.<T>transformDataWithEntity(type, new StringReader(s));
-                        } else {
-                            return BaseRequest.this.<T>transformDataNoEntity(type, new StringReader(s));
-                        }
-                    }
-                });
-            }
-        };
-    }
-
-    protected <T> RxResponse<T> transformDataWithEntity(Type type, Reader in) throws Exception {
-        JsonReader jsonReader = new JsonReader(in);
-        if (clazz == null) clazz = RxEntity.class;
-
-//        if (type == null) {
-//            ParameterizedType parameterizedType = (ParameterizedType) getClass().getGenericSuperclass();
-//            Type[] actualTypeArguments = parameterizedType.getActualTypeArguments();
-//            for (Type actualTypeArgument : actualTypeArguments) {
-//                System.out.println(actualTypeArgument);
-//            }
-//            type = actualTypeArguments[0];
-//        }
-        //type = type1;//((ParameterizedType)genType).getActualTypeArguments()[0];
-
-        Type geType = GsonUtil.type(clazz, type);
-        IEntity<T> iEntity = GsonUtil.fromJson(jsonReader, geType);
-        RxResponse<T> response = new RxResponse<>(false);
-        if (iEntity == null)
-
-        {
-            response.setData(null);
-        } else if (iEntity.isOk())
-
-        {
-            response.setData(iEntity.getData());
-        } else throw new
-
-                    ApiException(iEntity.getCode(), iEntity.
-
-                    getMsg());
-
-        return response;
-    }
-
-    protected <T> RxResponse<T> transformDataNoEntity(Type type, Reader in) throws Exception {
-        JsonReader jsonReader = new JsonReader(in);
-        T t = GsonUtil.fromJson(jsonReader, type);
-        RxResponse<T> response = new RxResponse<>(false, t);
-        return response;
     }
 }

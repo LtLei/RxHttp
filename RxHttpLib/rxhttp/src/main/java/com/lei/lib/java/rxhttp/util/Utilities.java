@@ -17,4 +17,8 @@ public class Utilities {
             throw new NullPointerException(message);
         return s;
     }
+
+    public static String getUserAgent() {
+        return System.getProperty("http.agent");
+    }
 }

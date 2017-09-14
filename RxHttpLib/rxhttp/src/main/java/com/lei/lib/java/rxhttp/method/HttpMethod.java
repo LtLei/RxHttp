@@ -10,6 +10,8 @@ package com.lei.lib.java.rxhttp.method;
  * PATCH: 发起Patch请求，在服务端更新资源（客户端提供改变的属性）
  * DELETE: 发起Delete请求，从服务端删除资源
  * </p>
+ *
+ * @author lei
  */
 
 public enum HttpMethod {
