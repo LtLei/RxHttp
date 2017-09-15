@@ -7,11 +7,13 @@ import com.lei.lib.java.rxcache.converter.IConverter;
 import com.lei.lib.java.rxcache.mode.CacheMode;
 import com.lei.lib.java.rxhttp.method.CacheMethod;
 import com.lei.lib.java.rxhttp.request.DeleteRequest;
+import com.lei.lib.java.rxhttp.request.DownloadRequest;
 import com.lei.lib.java.rxhttp.request.GetRequest;
 import com.lei.lib.java.rxhttp.request.PatchRequest;
 import com.lei.lib.java.rxhttp.request.PostJsonRequest;
 import com.lei.lib.java.rxhttp.request.PostRequest;
 import com.lei.lib.java.rxhttp.request.PutRequest;
+import com.lei.lib.java.rxhttp.request.UploadRequest;
 import com.lei.lib.java.rxhttp.util.Utilities;
 
 import java.lang.reflect.Type;
@@ -455,5 +457,17 @@ public class RxHttp {
         if (path == null) path = "";
         Utilities.checkNotNull(type, "type is null.");
         return new DeleteRequest<>(mContext, path, type);
+    }
+
+    public <T> UploadRequest<T> upload(String url, Type type) {
+        Utilities.checkNullOrEmpty(url, "url is null or empty, when upload file, you must set full url.");
+        Utilities.checkNotNull(type, "type is null.");
+        return new UploadRequest<>(mContext, url, type);
+    }
+
+    public <T> DownloadRequest<T> download(String url, Type type) {
+        Utilities.checkNullOrEmpty(url, "url is null or empty, when download file, you must set full url.");
+        Utilities.checkNotNull(type, "type is null.");
+        return new DownloadRequest<>(mContext, url, type);
     }
 }

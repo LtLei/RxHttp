@@ -27,13 +27,13 @@ public final class PostJsonRequest<T> extends BaseRequest<T, PostJsonRequest<T>>
 
     private String strRequest;
 
-    public PostJsonRequest jsonString(String jsonStr) {
+    public PostJsonRequest<T> jsonString(String jsonStr) {
         Utilities.checkNotNull(jsonStr, "jsonStr is null.");
         this.strRequest = jsonStr;
         return this;
     }
 
-    public PostJsonRequest jsonObject(JSONObject jsonObject) {
+    public PostJsonRequest<T> jsonObject(JSONObject jsonObject) {
         Utilities.checkNotNull(jsonObject, "jsonObject is null.");
         this.strRequest = jsonObject.toString();
         return this;

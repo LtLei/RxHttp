@@ -1,4 +1,6 @@
-package com.lei.lib.java.rxhttp.demo;
+package com.lei.lib.java.rxhttp.interceptors;
+
+import com.lei.lib.java.rxhttp.util.IOUtils;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -115,7 +117,7 @@ public class HttpLoggingInterceptor implements Interceptor {
                 }
             }
         } catch (Exception e) {
-           e.printStackTrace();
+            e.printStackTrace();
         } finally {
             log("--> END " + request.method());
         }
@@ -158,7 +160,6 @@ public class HttpLoggingInterceptor implements Interceptor {
         }
         return response;
     }
-
 
 
     private static Charset getCharset(MediaType contentType) {

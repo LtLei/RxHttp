@@ -1,4 +1,4 @@
-package com.lei.lib.java.rxhttp.demo;
+package com.lei.lib.java.rxhttp.util;
 
 import android.os.Build;
 import android.os.StatFs;

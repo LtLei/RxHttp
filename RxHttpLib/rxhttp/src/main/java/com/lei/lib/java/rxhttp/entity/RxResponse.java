@@ -1,10 +1,13 @@
 package com.lei.lib.java.rxhttp.entity;
 
+import java.io.Serializable;
+
 /**
  * Created by rymyz on 2017/9/13.
  */
 
-public class RxResponse<T> {
+public class RxResponse<T> implements Serializable {
+    private static final long serialVersionUID = 4729638326639758240L;
     private boolean isLocal;
     private T data;
 

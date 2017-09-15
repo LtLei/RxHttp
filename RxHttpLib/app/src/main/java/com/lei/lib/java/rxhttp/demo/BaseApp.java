@@ -4,8 +4,6 @@ import android.app.Application;
 
 import com.lei.lib.java.rxhttp.RxHttp;
 
-import java.util.logging.Level;
-
 import io.reactivex.Observable;
 import io.reactivex.ObservableSource;
 import io.reactivex.ObservableTransformer;
@@ -26,15 +24,8 @@ public class BaseApp extends Application {
         RxHttp.init(this);
         RxHttp.init(this);
 
-        //log相关
-        HttpLoggingInterceptor loggingInterceptor = new HttpLoggingInterceptor("RxHttp");
-        loggingInterceptor.setPrintLevel(HttpLoggingInterceptor.Level.BODY);        //log打印级别，决定了log显示的详细程度
-        loggingInterceptor.setColorLevel(Level.INFO);
-
-
         //http://ditu.amap.com/service/regeo?longitude=121.04925573429551&latitude=31.315590522490712
         RxHttp.getInstance()
-                .addNetInterceptor(loggingInterceptor)
                 .setBaseUrl("http://192.168.1.115:8090/")
                 .addCommonHeader("Hello", "enen")
                 .addCommonHeader("nihao", "hao")

@@ -6,7 +6,7 @@ import com.lei.lib.java.rxhttp.entity.IEntity;
  * Created by lei on 2017/8/27.
  */
 
-public class BaseBean<T> implements IEntity<T>{
+public class BaseBean<T> implements IEntity<T> {
     private int code;
     private String message;
     private T data;
@@ -28,6 +28,6 @@ public class BaseBean<T> implements IEntity<T>{
 
     @Override
     public boolean isOk() {
-        return 1000==code;
+        return 1000 == code;
     }
 }

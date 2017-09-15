@@ -21,6 +21,7 @@ import retrofit2.http.Part;
 import retrofit2.http.PartMap;
 import retrofit2.http.Path;
 import retrofit2.http.QueryMap;
+import retrofit2.http.Streaming;
 import retrofit2.http.Url;
 
 /**
@@ -118,4 +119,8 @@ public interface RxService {
             @Url String url,
             @PartMap() Map<String, String> description,
             @PartMap() Map<String, RequestBody> bodies);
+
+    @Streaming
+    @GET
+    Observable<ResponseBody> downloadFile(@Url String fileUrl);
 }

@@ -11,6 +11,7 @@ import com.lei.lib.java.rxhttp.entity.RxEntity;
 import com.lei.lib.java.rxhttp.entity.RxResponse;
 import com.lei.lib.java.rxhttp.exception.ApiException;
 import com.lei.lib.java.rxhttp.interceptors.HeadInterceptor;
+import com.lei.lib.java.rxhttp.interceptors.HttpLoggingInterceptor;
 import com.lei.lib.java.rxhttp.method.CacheMethod;
 import com.lei.lib.java.rxhttp.service.RxService;
 import com.lei.lib.java.rxhttp.util.ResponseConvert;
@@ -19,6 +20,7 @@ import com.lei.lib.java.rxhttp.util.Utilities;
 import java.lang.reflect.Type;
 import java.util.LinkedHashMap;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
 
 import io.reactivex.Observable;
 import io.reactivex.ObservableEmitter;
@@ -87,6 +89,12 @@ public abstract class BaseRequest<T, R extends BaseRequest<T, R>> {
             okBuilder.addInterceptor(rxHttp.getInterceptors().get(i));
         }
 
+        if (rxHttp.getNetInterceptors().size() == 0) {
+            HttpLoggingInterceptor loggingInterceptor = new HttpLoggingInterceptor("RxHttpLog");
+            loggingInterceptor.setPrintLevel(HttpLoggingInterceptor.Level.BODY);
+            loggingInterceptor.setColorLevel(Level.INFO);
+            rxHttp.addNetInterceptor(loggingInterceptor);
+        }
         for (int i = 0; i < rxHttp.getNetInterceptors().size(); i++) {
             okBuilder.addNetworkInterceptor(rxHttp.getNetInterceptors().get(i));
         }
@@ -184,13 +192,13 @@ public abstract class BaseRequest<T, R extends BaseRequest<T, R>> {
         return (R) this;
     }
 
-    public R setCacheKey(String cacheKey) {
+    public R cacheKey(String cacheKey) {
         Utilities.checkNullOrEmpty(cacheKey, "cacheKey is null or empty.");
         this.cacheKey = cacheKey;
         return (R) this;
     }
 
-    public R setCacheTime(long cacheTime) {
+    public R cacheTime(long cacheTime) {
         if (cacheTime < -1) cacheTime = -1;
         this.cacheTime = cacheTime;
         return (R) this;
@@ -223,15 +231,15 @@ public abstract class BaseRequest<T, R extends BaseRequest<T, R>> {
         return params;
     }
 
-    public String getCacheKey() {
+    protected String getCacheKey() {
         return cacheKey;
     }
 
-    public long getCacheTime() {
+    protected long getCacheTime() {
         return cacheTime;
     }
 
-    public CacheMethod getCacheMethod() {
+    protected CacheMethod getCacheMethod() {
         return cacheMethod;
     }
 
