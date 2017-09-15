@@ -159,8 +159,9 @@ public class RxHttp {
         return commonCacheMethod;
     }
 
-    public void setCommonCacheMethod(CacheMethod cacheMethod) {
+    public RxHttp setCommonCacheMethod(CacheMethod cacheMethod) {
         this.commonCacheMethod = cacheMethod;
+        return this;
     }
 
     public boolean isUseEntity() {
