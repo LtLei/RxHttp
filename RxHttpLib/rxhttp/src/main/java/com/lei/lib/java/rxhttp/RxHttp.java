@@ -36,6 +36,9 @@ import retrofit2.Converter;
 
 /**
  * RxHttp使用类
+ * 待改进的功能：
+ * 1、增加使用自定义的ConvertFactory来取代ConvertBefore的方法,主要是后者不够优雅=_=！
+ * 2、增加以Body的方式发起请求，这样就不需要传一堆Params了^_^
  *
  * @author lei
  */

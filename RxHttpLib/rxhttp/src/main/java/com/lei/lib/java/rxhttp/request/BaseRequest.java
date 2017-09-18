@@ -204,11 +204,15 @@ public abstract class BaseRequest<T, R extends BaseRequest<T, R>> {
         return (R) this;
     }
 
+    protected OkHttpClient.Builder getOkBuilder() {
+        return okBuilder;
+    }
+
     protected OkHttpClient getOkHttpClient() {
         if (!headers.containsKey(HeadInterceptor.USER_AGENT)) {
             headers.put(HeadInterceptor.USER_AGENT, Utilities.getUserAgent());
         }
-        return okBuilder.addInterceptor(new HeadInterceptor(headers)).build();
+        return getOkBuilder().addInterceptor(new HeadInterceptor(headers)).build();
     }
 
     protected Retrofit getRetrofit() {

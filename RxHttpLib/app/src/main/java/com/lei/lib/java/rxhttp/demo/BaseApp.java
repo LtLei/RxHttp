@@ -29,6 +29,7 @@ public class BaseApp extends Application {
                 .setBaseUrl("http://192.168.1.115:8090/")
                 .addCommonHeader("Hello", "enen")
                 .addCommonHeader("nihao", "hao")
+                .addCommonHeader("nihao", "hao")
                 .setEntity(BaseBean.class)
                 .useEntity(true)
                 .convertBefore(new ObservableTransformer<ResponseBody, String>() {

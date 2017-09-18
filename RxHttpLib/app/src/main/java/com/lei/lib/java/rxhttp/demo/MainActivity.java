@@ -1,16 +1,18 @@
 package com.lei.lib.java.rxhttp.demo;
 
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 
 import com.lei.lib.java.rxcache.util.RxUtil;
 import com.lei.lib.java.rxhttp.RxHttp;
-import com.lei.lib.java.rxhttp.entity.RxResponse;
-import com.lei.lib.java.rxhttp.method.CacheMethod;
+import com.lei.lib.java.rxhttp.progress.UIProgressListener;
 
-import io.reactivex.disposables.Disposable;
+import java.io.File;
+import java.io.InputStream;
+
 import io.reactivex.functions.Action;
 import io.reactivex.functions.Consumer;
 
@@ -24,7 +26,7 @@ public class MainActivity extends AppCompatActivity {
         findViewById(R.id.button).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                RxHttp.getInstance()
+                /*RxHttp.getInstance()
                         .<UserBean>delete("index", UserBean.class)
                         .addHeader("Hedada", "hengheng")
                         .addParam("test","1")
@@ -57,6 +59,36 @@ public class MainActivity extends AppCompatActivity {
                             public void accept(Throwable throwable) throws Exception {
                                 Log.e("测试", throwable.getLocalizedMessage());
                                 throwable.printStackTrace();
+                            }
+                        });*/
+
+
+                RxHttp.getInstance()
+                        .download("http://192.168.1.115:8090/test.pdf", BaseBean.class)
+                        .setProgressListener(new UIProgressListener() {
+                            @Override
+                            public void onUIProgress(long currentBytes, long contentLength, boolean done) {
+                                Log.e("测试", "进度是：" + ((int) (currentBytes * 100 / contentLength)) + "是否完成？" + done);
+                            }
+                        })
+                        .setOutputFile(new File(Environment.getExternalStoragePublicDirectory
+                                (Environment.DIRECTORY_DOWNLOADS), "file2.pdf"))
+                        .excute()
+                        .compose(RxUtil.<InputStream>io_main())
+                        .subscribe(new Consumer<InputStream>() {
+                            @Override
+                            public void accept(InputStream inputStream) throws Exception {
+
+                            }
+                        }, new Consumer<Throwable>() {
+                            @Override
+                            public void accept(Throwable throwable) throws Exception {
+                                Log.e("测试", "下载失败了，" + throwable.getMessage());
+                            }
+                        }, new Action() {
+                            @Override
+                            public void run() throws Exception {
+                                Log.e("测试", "下载完成了");
                             }
                         });
 

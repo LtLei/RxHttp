@@ -1,4 +1,6 @@
-package com.lei.lib.java.rxhttp.progress;
+package com.lei.lib.java.rxhttp.progress.upload;
+
+import com.lei.lib.java.rxhttp.progress.ProgressListener;
 
 import java.io.IOException;
 

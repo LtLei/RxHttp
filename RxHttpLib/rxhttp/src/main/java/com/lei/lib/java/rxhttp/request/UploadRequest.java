@@ -4,7 +4,7 @@ import android.app.Application;
 
 import com.lei.lib.java.rxhttp.entity.RxResponse;
 import com.lei.lib.java.rxhttp.progress.ProgressListener;
-import com.lei.lib.java.rxhttp.progress.ProgressRequestBody;
+import com.lei.lib.java.rxhttp.progress.upload.ProgressRequestBody;
 import com.lei.lib.java.rxhttp.util.Utilities;
 
 import org.json.JSONObject;
@@ -80,6 +80,8 @@ public final class UploadRequest<T> extends BaseRequest<T, UploadRequest<T>> {
 
     @Override
     protected Observable<ResponseBody> netObservable() {
+        Utilities.checkNotNull(progressListener, "progressListener is null.");
+
         boolean fileMode = objectParts.size() == 0;
         MediaType mediaType = MediaType.parse(formData ? "multipart/form-data; charset=utf-8" : "application/octet-stream");
 
