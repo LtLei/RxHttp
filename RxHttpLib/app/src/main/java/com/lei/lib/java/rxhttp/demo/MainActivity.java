@@ -27,7 +27,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 RxHttp.getInstance()
-                        .<UserBean>delete("index1", UserBean.class)
+                        .<UserBean>delete("index", UserBean.class)
                         .addHeader("Hedada", "hengheng")
                         .addParam("test", "1")
                         .cacheKey("test1")

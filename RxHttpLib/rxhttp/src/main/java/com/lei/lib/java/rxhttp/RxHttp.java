@@ -53,6 +53,10 @@ public class RxHttp {
         RxCache.init(context);
     }
 
+    public static Application getContext() {
+        return mContext;
+    }
+
     //about singleton
     private static class SingletonHolder {
         private static final RxHttp instance = new RxHttp();

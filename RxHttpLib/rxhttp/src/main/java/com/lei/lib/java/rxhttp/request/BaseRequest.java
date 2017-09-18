@@ -14,6 +14,7 @@ import com.lei.lib.java.rxhttp.interceptors.HeadInterceptor;
 import com.lei.lib.java.rxhttp.interceptors.HttpLoggingInterceptor;
 import com.lei.lib.java.rxhttp.method.CacheMethod;
 import com.lei.lib.java.rxhttp.service.RxService;
+import com.lei.lib.java.rxhttp.util.NetworkUtil;
 import com.lei.lib.java.rxhttp.util.ResponseConvert;
 import com.lei.lib.java.rxhttp.util.Utilities;
 
@@ -305,7 +306,15 @@ public abstract class BaseRequest<T, R extends BaseRequest<T, R>> {
     }
 
     protected Observable<RxResponse<T>> requestFirstNet() {
-        if (transformer != null) {
+        if (!NetworkUtil.isAvailable(RxHttp.getContext())) {
+            return getRxCache().<T>get(cacheKey, forceNet, type)
+                    .map(new Function<CacheResponse<T>, RxResponse<T>>() {
+                        @Override
+                        public RxResponse<T> apply(CacheResponse<T> tCacheResponse) throws Exception {
+                            return new RxResponse<>(true, tCacheResponse.getData());
+                        }
+                    });
+        } else if (transformer != null) {
             return netObservable()
                     .compose(transformer)
                     .compose(getResponseConvert().handleStringResult())
@@ -317,13 +326,21 @@ public abstract class BaseRequest<T, R extends BaseRequest<T, R>> {
                             }
                         }
                     })
-                    .onExceptionResumeNext(getRxCache().<T>get(cacheKey, forceNet, type)
-                            .map(new Function<CacheResponse<T>, RxResponse<T>>() {
-                                @Override
-                                public RxResponse<T> apply(CacheResponse<T> tCacheResponse) throws Exception {
-                                    return new RxResponse<>(true, tCacheResponse.getData());
-                                }
-                            }));
+                    .onErrorResumeNext(new Function<Throwable, ObservableSource<? extends RxResponse<T>>>() {
+                        @Override
+                        public ObservableSource<? extends RxResponse<T>> apply(Throwable throwable) throws Exception {
+                            if (!(throwable instanceof ApiException)) {
+                                return getRxCache().<T>get(cacheKey, forceNet, type)
+                                        .map(new Function<CacheResponse<T>, RxResponse<T>>() {
+                                            @Override
+                                            public RxResponse<T> apply(CacheResponse<T> tCacheResponse) throws Exception {
+                                                return new RxResponse<>(true, tCacheResponse.getData());
+                                            }
+                                        });
+                            }
+                            return Observable.error(throwable);
+                        }
+                    });
         } else
             return netObservable()
                     .compose(getResponseConvert().handleResponseBodyResult())

@@ -3,6 +3,7 @@ package com.lei.lib.java.rxhttp.subscriber;
 import android.util.MalformedJsonException;
 
 import com.lei.lib.java.rxhttp.exception.ApiException;
+import com.lei.lib.java.rxhttp.exception.RxException;
 
 import java.net.ConnectException;
 import java.net.SocketTimeoutException;
@@ -20,7 +21,7 @@ public abstract class FailCunsumer implements Consumer<Throwable> {
     @Override
     public void accept(Throwable e) throws Exception {
         if (e instanceof NullPointerException) {
-            _onFail(ApiException.CODE_NULL, ApiException.MSG_NULL);
+            _onFail(RxException.CODE_NULL, RxException.MSG_NULL);
         } else if (e instanceof HttpException) {
             if (404 == ((HttpException) e).code()) {
                 _onFail(404, "您请求的地址已经不存在了");
@@ -28,28 +29,30 @@ public abstract class FailCunsumer implements Consumer<Throwable> {
                 _onFail(500, "服务器出了点问题，请您稍后再试吧...");
             } else _onFail(((HttpException) e).code(), ((HttpException) e).message());
         } else if (e instanceof SocketTimeoutException) {
-            _onFail(ApiException.CODE_TIMEOUT, ApiException.MSG_TIMEOUT);
+            _onFail(RxException.CODE_TIMEOUT, RxException.MSG_TIMEOUT);
         } else if (e instanceof ConnectException) {
-            _onFail(ApiException.CODE_UN_CONNECT, ApiException.MSG_TIMEOUT);
+            _onFail(RxException.CODE_UN_CONNECT, RxException.MSG_TIMEOUT);
         } else if (e instanceof UnknownHostException) {
-            _onFail(ApiException.CODE_UN_CONNECT, ApiException.MSG_TIMEOUT);
+            _onFail(RxException.CODE_UN_CONNECT, RxException.MSG_TIMEOUT);
         } else if (e instanceof MalformedJsonException) {
-            _onFail(ApiException.CODE_MALFORM_JSON, ApiException.MSG_MALFORM_JSON);
+            _onFail(RxException.CODE_MALFORM_JSON, RxException.MSG_MALFORM_JSON);
         } else if (e instanceof CompositeException) {
             CompositeException compositeE = (CompositeException) e;
             for (Throwable throwable : compositeE.getExceptions()) {
                 if (throwable instanceof SocketTimeoutException) {
-                    _onFail(ApiException.CODE_TIMEOUT, ApiException.MSG_TIMEOUT);
+                    _onFail(RxException.CODE_TIMEOUT, RxException.MSG_TIMEOUT);
                 } else if (throwable instanceof ConnectException) {
-                    _onFail(ApiException.CODE_UN_CONNECT, ApiException.MSG_TIMEOUT);
+                    _onFail(RxException.CODE_UN_CONNECT, RxException.MSG_TIMEOUT);
                 } else if (throwable instanceof UnknownHostException) {
-                    _onFail(ApiException.CODE_UN_CONNECT, ApiException.MSG_TIMEOUT);
+                    _onFail(RxException.CODE_UN_CONNECT, RxException.MSG_TIMEOUT);
                 } else if (throwable instanceof MalformedJsonException) {
-                    _onFail(ApiException.CODE_MALFORM_JSON, ApiException.MSG_MALFORM_JSON);
+                    _onFail(RxException.CODE_MALFORM_JSON, RxException.MSG_MALFORM_JSON);
                 } else {
-                    _onFail(ApiException.CODE_DEFAULT, e.getMessage() == null ? e.toString() : e.getMessage());
+                    _onFail(RxException.CODE_DEFAULT, e.getMessage() == null ? e.toString() : e.getMessage());
                 }
             }
+        } else if (e instanceof ApiException) {
+            _onFail(((ApiException) e).getCode(), ((ApiException) e).getMsg());
         } else {
             String msg = e.getMessage();
             int code;
@@ -58,11 +61,11 @@ public abstract class FailCunsumer implements Consumer<Throwable> {
                     code = Integer.parseInt(msg.split("#")[0]);
                     _onFail(code, msg.split("#")[1]);
                 } else {
-                    code = ApiException.CODE_DEFAULT;
+                    code = RxException.CODE_DEFAULT;
                     _onFail(code, msg);
                 }
             } else {
-                code = ApiException.CODE_DEFAULT;
+                code = RxException.CODE_DEFAULT;
                 _onFail(code, e.toString());
             }
         }
