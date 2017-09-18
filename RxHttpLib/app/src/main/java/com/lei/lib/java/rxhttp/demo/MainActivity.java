@@ -1,19 +1,16 @@
 package com.lei.lib.java.rxhttp.demo;
 
 import android.os.Bundle;
-import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 
+import com.lei.lib.java.rxcache.util.LogUtil;
 import com.lei.lib.java.rxcache.util.RxUtil;
 import com.lei.lib.java.rxhttp.RxHttp;
 import com.lei.lib.java.rxhttp.entity.RxResponse;
 import com.lei.lib.java.rxhttp.method.CacheMethod;
-import com.lei.lib.java.rxhttp.progress.UIProgressListener;
-
-import java.io.File;
-import java.io.InputStream;
+import com.lei.lib.java.rxhttp.subscriber.FailCunsumer;
 
 import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.Action;
@@ -32,7 +29,7 @@ public class MainActivity extends AppCompatActivity {
                 RxHttp.getInstance()
                         .<UserBean>delete("index1", UserBean.class)
                         .addHeader("Hedada", "hengheng")
-                        .addParam("test","1")
+                        .addParam("test", "1")
                         .cacheKey("test1")
                         .cacheTime(1000 * 5)
                         .cacheMethod(CacheMethod.FIRST_CACHE_THEN_NET)
@@ -57,15 +54,12 @@ public class MainActivity extends AppCompatActivity {
                                         + ": "
                                         + (userBeanRxResponse.getData() == null ? "这是一个空的结果哦" : userBeanRxResponse.getData().toString()));
                             }
-                        }, new Consumer<Throwable>() {
+                        }, new FailCunsumer() {
                             @Override
-                            public void accept(Throwable throwable) throws Exception {
-                                Log.e("测试", throwable.getLocalizedMessage());
-                                throwable.printStackTrace();
+                            public void _onFail(int code, String message) {
+                                LogUtil.e(message);
                             }
                         });
-
-
                /* RxHttp.getInstance()
                         .download("http://192.168.1.115:8090/test.pdf", BaseBean.class)
                         .setProgressListener(new UIProgressListener() {

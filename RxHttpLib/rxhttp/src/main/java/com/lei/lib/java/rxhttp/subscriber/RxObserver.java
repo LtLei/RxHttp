@@ -9,6 +9,7 @@ import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
 
 import io.reactivex.Observer;
+import io.reactivex.disposables.Disposable;
 import io.reactivex.exceptions.CompositeException;
 import retrofit2.HttpException;
 
@@ -20,11 +21,25 @@ import retrofit2.HttpException;
 
 public abstract class RxObserver<T> implements Observer<T> {
     @Override
+    public void onSubscribe(Disposable d) {
+
+    }
+
+    @Override
+    public void onComplete() {
+
+    }
+
+    @Override
     public void onError(Throwable e) {
         if (e instanceof NullPointerException) {
             _onFail(ApiException.CODE_NULL, ApiException.MSG_NULL);
         } else if (e instanceof HttpException) {
-            _onFail(((HttpException) e).code(), ((HttpException) e).message());
+            if (404 == ((HttpException) e).code()) {
+                _onFail(404, "您请求的地址已经不存在了");
+            } else if (500 == ((HttpException) e).code()) {
+                _onFail(500, "服务器出了点问题，请您稍后再试吧...");
+            } else _onFail(((HttpException) e).code(), ((HttpException) e).message());
         } else if (e instanceof SocketTimeoutException) {
             _onFail(ApiException.CODE_TIMEOUT, ApiException.MSG_TIMEOUT);
         } else if (e instanceof ConnectException) {
