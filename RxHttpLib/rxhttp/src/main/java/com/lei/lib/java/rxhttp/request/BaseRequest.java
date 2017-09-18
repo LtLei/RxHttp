@@ -129,8 +129,6 @@ public abstract class BaseRequest<T, R extends BaseRequest<T, R>> {
             retrofitBuilder.addConverterFactory(rxHttp.getConverterFactories().get(i));
         }
 
-
-        RxCache.init(context);
         rxCacheBuilder = new RxCache.Builder();
         rxCacheBuilder.setDebug(rxHttp.isDebug())
                 .setConverter(rxHttp.getConverter())

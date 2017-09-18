@@ -2,6 +2,7 @@ package com.lei.lib.java.rxhttp;
 
 import android.app.Application;
 
+import com.lei.lib.java.rxcache.RxCache;
 import com.lei.lib.java.rxcache.converter.GsonConverter;
 import com.lei.lib.java.rxcache.converter.IConverter;
 import com.lei.lib.java.rxcache.mode.CacheMode;
@@ -49,6 +50,7 @@ public class RxHttp {
 
     public static void init(Application context) {
         mContext = Utilities.checkNotNull(context, "context is null.");
+        RxCache.init(context);
     }
 
     //about singleton
