@@ -8,10 +8,8 @@ import com.lei.lib.java.rxhttp.progress.ProgressListener;
 import com.lei.lib.java.rxhttp.util.Utilities;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.InputStream;
+import java.io.RandomAccessFile;
 import java.lang.reflect.Type;
 
 import io.reactivex.Observable;
@@ -54,44 +52,35 @@ public final class DownloadRequest<T> extends BaseRequest<T, DownloadRequest<T>>
     public Observable<Boolean> excute() {
         Utilities.checkNotNull(outputFile, "file is null.");
         return netObservable()
-                .map(new Function<ResponseBody, InputStream>() {
+                .map(new Function<ResponseBody, Boolean>() {
                     @Override
-                    public InputStream apply(ResponseBody responseBody) throws Exception {
-                        return responseBody.byteStream();
-                    }
-                })
-                .map(new Function<InputStream, Boolean>() {
-                    @Override
-                    public Boolean apply(InputStream inputStream) throws Exception {
-                        return writeFile(inputStream, outputFile);
+                    public Boolean apply(ResponseBody responseBody) throws Exception {
+                        writeFile(responseBody.byteStream(), outputFile);
+                        return true;
                     }
                 });
     }
 
-    private boolean writeFile(InputStream in, File file) {
+    private void writeFile(InputStream in, File file) throws Exception {
         if (!file.getParentFile().exists())
             file.getParentFile().mkdirs();
 
         if (file != null && file.exists())
             file.delete();
+
+        RandomAccessFile randomAccessFile = null;
         try {
-            FileOutputStream out = new FileOutputStream(file);
+            randomAccessFile = new RandomAccessFile(file, "rw");
             byte[] buffer = new byte[1024 * 128];
             int len = -1;
             while ((len = in.read(buffer)) != -1) {
-                out.write(buffer, 0, len);
+                randomAccessFile.write(buffer, 0, len);
             }
-            out.flush();
-            out.close();
-            in.close();
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-            return false;
-        } catch (IOException e) {
-            e.printStackTrace();
-            return false;
+        } finally {
+            if (randomAccessFile != null) {
+                randomAccessFile.close();
+            }
         }
-        return true;
     }
 
     @Override

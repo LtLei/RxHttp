@@ -1,22 +1,25 @@
 package com.lei.lib.java.rxhttp.demo;
 
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.content.Context;
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 
-import com.lei.lib.java.rxcache.util.LogUtil;
 import com.lei.lib.java.rxcache.util.RxUtil;
 import com.lei.lib.java.rxhttp.RxHttp;
-import com.lei.lib.java.rxhttp.entity.RxResponse;
-import com.lei.lib.java.rxhttp.method.CacheMethod;
-import com.lei.lib.java.rxhttp.subscriber.FailCunsumer;
+import com.lei.lib.java.rxhttp.progress.ProgressListener;
 
-import io.reactivex.disposables.Disposable;
+import java.io.File;
+
 import io.reactivex.functions.Action;
 import io.reactivex.functions.Consumer;
 
 public class MainActivity extends AppCompatActivity {
+    int preBytes = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -26,7 +29,7 @@ public class MainActivity extends AppCompatActivity {
         findViewById(R.id.button).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                RxHttp.getInstance()
+                /*RxHttp.getInstance()
                         .<UserBean>delete("index", UserBean.class)
                         .addHeader("Hedada", "hengheng")
                         .addParam("test", "1")
@@ -59,22 +62,39 @@ public class MainActivity extends AppCompatActivity {
                             public void _onFail(int code, String message) {
                                 LogUtil.e(message);
                             }
-                        });
-               /* RxHttp.getInstance()
-                        .download("http://192.168.1.115:8090/test.pdf", BaseBean.class)
-                        .setProgressListener(new UIProgressListener() {
+                        });*/
+
+                final Notification.Builder notifyBuilder = new Notification.Builder(MainActivity.this)
+                        .setContentTitle("开始下载")
+                        .setSmallIcon(R.mipmap.ic_launcher_round)
+                        .setAutoCancel(false);
+                final NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+                notificationManager.notify(0, notifyBuilder.getNotification());
+
+
+                RxHttp.getInstance()
+                        .download("http://p1.exmmw.cn/p1/dl/huocaier.apk", BaseBean.class)
+                        .setProgressListener(new ProgressListener() {
                             @Override
-                            public void onUIProgress(long currentBytes, long contentLength, boolean done) {
-                                Log.e("测试", "进度是：" + ((int) (currentBytes * 100 / contentLength)) + "是否完成？" + done);
+                            public void onProgress(long currentBytes, long contentLength, boolean done) {
+                                int progress = (int) (currentBytes * 100 / contentLength);
+                                if (preBytes < progress) {
+                                    Log.e("测试", "进度是：" + progress + "是否完成？" + done);
+                                    notifyBuilder.setProgress(100, progress, false);
+                                    Notification notification =notifyBuilder.getNotification();
+                                    notification.flags=Notification.FLAG_NO_CLEAR|Notification.FLAG_FOREGROUND_SERVICE;
+                                    notificationManager.notify(0, notification);
+                                }
+                                preBytes = progress;
                             }
                         })
                         .setOutputFile(new File(Environment.getExternalStoragePublicDirectory
-                                (Environment.DIRECTORY_DOWNLOADS), "file2.pdf"))
+                                (Environment.DIRECTORY_DOWNLOADS), "heihei.apk"))
                         .excute()
-                        .compose(RxUtil.<InputStream>io_main())
-                        .subscribe(new Consumer<InputStream>() {
+                        .compose(RxUtil.<Boolean>io_main())
+                        .subscribe(new Consumer<Boolean>() {
                             @Override
-                            public void accept(InputStream inputStream) throws Exception {
+                            public void accept(Boolean b) throws Exception {
 
                             }
                         }, new Consumer<Throwable>() {
@@ -87,8 +107,7 @@ public class MainActivity extends AppCompatActivity {
                             public void run() throws Exception {
                                 Log.e("测试", "下载完成了");
                             }
-                        });*/
-
+                        });
             }
         });
     }
