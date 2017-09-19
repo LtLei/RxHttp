@@ -8,13 +8,13 @@ import com.lei.lib.java.rxhttp.progress.ProgressListener;
 import com.lei.lib.java.rxhttp.util.Utilities;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Type;
 
 import io.reactivex.Observable;
-import io.reactivex.functions.Consumer;
 import io.reactivex.functions.Function;
 import okhttp3.OkHttpClient;
 import okhttp3.ResponseBody;
@@ -51,7 +51,7 @@ public final class DownloadRequest<T> extends BaseRequest<T, DownloadRequest<T>>
         throw new UnsupportedOperationException("this operation is not support when download file. use excute() instead.");
     }
 
-    public Observable<InputStream> excute() {
+    public Observable<Boolean> excute() {
         Utilities.checkNotNull(outputFile, "file is null.");
         return netObservable()
                 .map(new Function<ResponseBody, InputStream>() {
@@ -60,35 +60,38 @@ public final class DownloadRequest<T> extends BaseRequest<T, DownloadRequest<T>>
                         return responseBody.byteStream();
                     }
                 })
-                .doOnNext(new Consumer<InputStream>() {
+                .map(new Function<InputStream, Boolean>() {
                     @Override
-                    public void accept(InputStream inputStream) throws Exception {
-                        try {
-                            writeFile(inputStream, outputFile);
-                        } catch (Exception e) {
-                            Observable.error(e);
-                        }
+                    public Boolean apply(InputStream inputStream) throws Exception {
+                        return writeFile(inputStream, outputFile);
                     }
                 });
     }
 
-    private void writeFile(InputStream in, File file) throws IOException {
+    private boolean writeFile(InputStream in, File file) {
         if (!file.getParentFile().exists())
             file.getParentFile().mkdirs();
 
         if (file != null && file.exists())
             file.delete();
-
-        FileOutputStream out = new FileOutputStream(file);
-        byte[] buffer = new byte[1024 * 128];
-        int len = -1;
-        while ((len = in.read(buffer)) != -1) {
-            out.write(buffer, 0, len);
+        try {
+            FileOutputStream out = new FileOutputStream(file);
+            byte[] buffer = new byte[1024 * 128];
+            int len = -1;
+            while ((len = in.read(buffer)) != -1) {
+                out.write(buffer, 0, len);
+            }
+            out.flush();
+            out.close();
+            in.close();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+            return false;
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
         }
-        out.flush();
-        out.close();
-        in.close();
-
+        return true;
     }
 
     @Override
