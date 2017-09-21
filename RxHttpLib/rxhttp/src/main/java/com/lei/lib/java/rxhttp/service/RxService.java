@@ -70,7 +70,7 @@ public interface RxService {
      * @return 返回请求结果，以ResponseBody形式
      */
     @POST("{path}")
-    @Headers({"Content-Type: application/json", "Accept: application/json"})
+//    @Headers({"Content-Type: application/json; charset=utf-8", "Accept: application/json; charset=utf-8"})
     Observable<ResponseBody> postJson(
             @Path(value = "path", encoded = true) String path,
             @Body RequestBody body
