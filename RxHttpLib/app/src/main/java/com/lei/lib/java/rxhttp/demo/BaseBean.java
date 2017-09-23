@@ -30,4 +30,13 @@ public class BaseBean<T> implements IEntity<T> {
     public boolean isOk() {
         return 1000 == code;
     }
+
+    @Override
+    public String toString() {
+        return "BaseBean{" +
+                "code=" + code +
+                ", message='" + message + '\'' +
+                ", data=" + data.toString() +
+                '}';
+    }
 }

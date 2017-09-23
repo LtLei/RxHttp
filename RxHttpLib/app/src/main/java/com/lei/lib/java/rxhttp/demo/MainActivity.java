@@ -1,22 +1,18 @@
 package com.lei.lib.java.rxhttp.demo;
 
-import android.app.Notification;
-import android.app.NotificationManager;
-import android.content.Context;
 import android.os.Bundle;
-import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 
-import com.lei.lib.java.rxcache.util.RxUtil;
-import com.lei.lib.java.rxhttp.RxHttp;
-import com.lei.lib.java.rxhttp.progress.ProgressListener;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+import com.google.gson.stream.JsonReader;
+import com.lei.lib.java.rxhttp.util.GsonUtil;
 
-import java.io.File;
-
-import io.reactivex.functions.Action;
-import io.reactivex.functions.Consumer;
+import java.io.StringReader;
+import java.lang.reflect.Type;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
     int preBytes = 0;
@@ -64,7 +60,7 @@ public class MainActivity extends AppCompatActivity {
                             }
                         });*/
 
-                final Notification.Builder notifyBuilder = new Notification.Builder(MainActivity.this)
+                /*final Notification.Builder notifyBuilder = new Notification.Builder(MainActivity.this)
                         .setContentTitle("开始下载")
                         .setSmallIcon(R.mipmap.ic_launcher_round)
                         .setAutoCancel(false);
@@ -107,9 +103,42 @@ public class MainActivity extends AppCompatActivity {
                             public void run() throws Exception {
                                 Log.e("测试", "下载完成了");
                             }
-                        });
+                        });*/
+
+
+                String jsonStr = "{" +
+                        "    \"code\": 1," +
+                        "    \"message\": \"1111\"," +
+                        "    \"data\": {" +
+                        "    }" +
+                        "}";
+                String arr = "{\"code\":1111,\"message\":\"1111\",\"data\":[{\"name\":\"lei\"},{\"name\":\"lei\"},{\"name\":\"lei\"}]}";
+                Type type = GsonUtil.type(BaseBean.class, new TypeToken<List<User>>(){}.getType());
+                BaseBean<List<User>> userBaseBean = GsonUtil.fromJson(new JsonReader(new StringReader(jsonStr)), type);
+                Log.e("特使", userBaseBean.getData().toString());
+
             }
         });
-    }
 
+        }
+
+
+    public class User {
+        private String name;
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
+
+        @Override
+        public String toString() {
+            return "User{" +
+                    "name='" + name + '\'' +
+                    '}';
+        }
+    }
 }
