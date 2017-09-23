@@ -26,22 +26,22 @@ public class BaseApp extends Application {
 
         //http://ditu.amap.com/service/regeo?longitude=121.04925573429551&latitude=31.315590522490712
         RxHttp.getInstance()
-                .setBaseUrl("http://192.168.1.115:8090/")
-                .addCommonHeader("Hello", "enen")
-                .addCommonHeader("nihao", "hao")
-                .addCommonHeader("nihao", "hao")
+                .setBaseUrl("http://my.com/test.php/")
+//                .addCommonHeader("Hello", "enen")
+//                .addCommonHeader("nihao", "hao")
+//                .addCommonHeader("nihao", "hao")
                 .setEntity(BaseBean.class)
-                .useEntity(true)
-                .convertBefore(new ObservableTransformer<ResponseBody, String>() {
-                    @Override
-                    public ObservableSource<String> apply(Observable<ResponseBody> upstream) {
-                        return upstream.map(new Function<ResponseBody, String>() {
-                            @Override
-                            public String apply(ResponseBody responseBody) throws Exception {
-                                return responseBody.string();
-                            }
-                        });
-                    }
-                });
+                .useEntity(true);
+//                .convertBefore(new ObservableTransformer<ResponseBody, String>() {
+//                    @Override
+//                    public ObservableSource<String> apply(Observable<ResponseBody> upstream) {
+//                        return upstream.map(new Function<ResponseBody, String>() {
+//                            @Override
+//                            public String apply(ResponseBody responseBody) throws Exception {
+//                                return responseBody.string();
+//                            }
+//                        });
+//                    }
+//                });
     }
 }

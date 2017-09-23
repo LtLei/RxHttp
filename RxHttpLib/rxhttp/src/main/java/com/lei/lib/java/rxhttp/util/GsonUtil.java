@@ -20,20 +20,21 @@ import java.util.List;
  */
 
 public class GsonUtil {
-    private static Gson gson;
+    private static GsonBuilder gson;
 
     static {
-//        gson = new Gson();
-        gson = new GsonBuilder().registerTypeHierarchyAdapter(List.class, new JsonDeserializer<List<?>>() {
-            @Override
-            public List<?> deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
-                if (json.isJsonArray()) {
-                    return new Gson().fromJson(json, typeOfT);
-                } else {
-                    return Collections.emptyList();
-                }
-            }
-        }).create();
+        gson = new GsonBuilder()
+                .registerTypeHierarchyAdapter(List.class, new JsonDeserializer<List<?>>() {
+                    @Override
+                    public List<?> deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
+                        if (json.isJsonArray() && typeOfT.getClass().isArray()) {
+                            return new Gson().fromJson(json, typeOfT);
+                        } else {
+                            return Collections.emptyList();
+                        }
+                    }
+                })
+        ;
     }
 
     public static ParameterizedType type(final Class raw, final Type... args) {
@@ -53,6 +54,6 @@ public class GsonUtil {
     }
 
     public static <T> T fromJson(JsonReader reader, Type type) {
-        return gson.fromJson(reader, type);
+        return gson.create().fromJson(reader, type);
     }
 }

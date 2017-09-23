@@ -8,11 +8,19 @@ import android.view.View;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.google.gson.stream.JsonReader;
+import com.lei.lib.java.rxcache.util.LogUtil;
+import com.lei.lib.java.rxcache.util.RxUtil;
+import com.lei.lib.java.rxhttp.RxHttp;
+import com.lei.lib.java.rxhttp.entity.RxResponse;
+import com.lei.lib.java.rxhttp.exception.RxException;
+import com.lei.lib.java.rxhttp.subscriber.FailCunsumer;
 import com.lei.lib.java.rxhttp.util.GsonUtil;
 
 import java.io.StringReader;
 import java.lang.reflect.Type;
 import java.util.List;
+
+import io.reactivex.functions.Consumer;
 
 public class MainActivity extends AppCompatActivity {
     int preBytes = 0;
@@ -25,6 +33,27 @@ public class MainActivity extends AppCompatActivity {
         findViewById(R.id.button).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                /*RxHttp.getInstance()
+                        .<User>get("",User.class)
+                        .request()
+                        .compose(RxUtil.<RxResponse<User>>io_main())
+                        .subscribe(new Consumer<RxResponse<User>>() {
+                            @Override
+                            public void accept(RxResponse<User> userRxResponse) throws Exception {
+                                LogUtil.e("数据" + userRxResponse.getData().toString());
+                            }
+                        }, new FailCunsumer() {
+                            @Override
+                            public void _onFail(int code, String message) {
+LogUtil.e(message);
+                            }
+
+                            @Override
+                            public void _onError(RxException e) {
+                                LogUtil.e(e.getMsg());
+                            }
+                        });*/
+
                 /*RxHttp.getInstance()
                         .<UserBean>delete("index", UserBean.class)
                         .addHeader("Hedada", "hengheng")
@@ -115,8 +144,18 @@ public class MainActivity extends AppCompatActivity {
                 String arr = "{\"code\":1111,\"message\":\"1111\",\"data\":[{\"name\":\"lei\"},{\"name\":\"lei\"},{\"name\":\"lei\"}]}";
                 Type type = GsonUtil.type(BaseBean.class, new TypeToken<List<User>>(){}.getType());
                 BaseBean<List<User>> userBaseBean = GsonUtil.fromJson(new JsonReader(new StringReader(jsonStr)), type);
-                Log.e("特使", userBaseBean.getData().toString());
+                Log.e("特使1", userBaseBean.getData().toString());
 
+                BaseBean<List<User>> userBaseBean1 = GsonUtil.fromJson(new JsonReader(new StringReader(arr)), type);
+                Log.e("特使1", userBaseBean1.getData().toString());
+
+                Type type1 = GsonUtil.type(BaseBean.class, User.class);
+                BaseBean<User> userBaseBean2= GsonUtil.fromJson(new JsonReader(new StringReader(jsonStr)), type1);
+                Log.e("特使2", userBaseBean2.getData().toString());
+
+                String arr1 = "{\"code\":1111,\"message\":\"1111\",\"data\":[]}";
+                BaseBean<User> userBaseBean3= GsonUtil.fromJson(new JsonReader(new StringReader(arr1)), type1);
+                Log.e("特使2", userBaseBean3.getData().toString());
             }
         });
 
