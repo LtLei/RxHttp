@@ -7,7 +7,6 @@ import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParseException;
 import com.google.gson.stream.JsonReader;
-import com.lei.lib.java.rxcache.util.LogUtil;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -21,7 +20,7 @@ import java.util.List;
  */
 
 public class GsonUtil {
-   /* private static GsonBuilder gson;
+    private static GsonBuilder gson;
 
     static {
         gson = new GsonBuilder()
@@ -36,7 +35,7 @@ public class GsonUtil {
                     }
                 })
         ;
-    }*/
+    }
 
     public static ParameterizedType type(final Class raw, final Type... args) {
         return new ParameterizedType() {
@@ -58,7 +57,7 @@ public class GsonUtil {
         return gson(!type.getClass().isArray()).fromJson(reader, type);
     }
 
-    private static Gson gson(final boolean needObject) {
+    public static Gson gson(final boolean needObject) {
         return new GsonBuilder()
                 .registerTypeHierarchyAdapter(Object.class, new JsonDeserializer<Object>() {
                     @Override
