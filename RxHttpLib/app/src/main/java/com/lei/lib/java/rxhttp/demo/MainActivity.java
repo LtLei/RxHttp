@@ -12,7 +12,6 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonParseException;
 import com.google.gson.reflect.TypeToken;
 import com.lei.lib.java.rxcache.util.LogUtil;
-import com.lei.lib.java.rxhttp.util.GsonUtil;
 
 import java.lang.reflect.Type;
 import java.util.List;
@@ -152,29 +151,31 @@ LogUtil.e(message);
                 String t7 = "{\"code\":100,\"message\":\"1111\",\"data\":[{\"name\":\"lei\"},{\"name\":\"lei\"}]}";
                 String t6 = "{\"code\":100,\"message\":\"1111\",\"data\":[]}";
 
-                Type typeBase = GsonUtil.type(BaseBean.class,String.class);
+               /* Type typeBase = GsonUtil.type(BaseBean.class, String.class);
 
                 typeBase = BaseBean.class;
-                Type type = new TypeToken<List<User>>(){}.getType();
-                BaseBean baseBean1 = new Gson().fromJson(t5,typeBase);
-                LogUtil.e("base1 "+baseBean1.toString());
-                User users1 = gson(true).fromJson(baseBean1.getData().toString(),User.class);
+                Type type = new TypeToken<List<User>>() {
+                }.getType();
+                BaseBean baseBean1 = new Gson().fromJson(t5, typeBase);
+                LogUtil.e("base1 " + baseBean1.toString());
+                User users1 = gson(true).fromJson(baseBean1.getData().toString(), User.class);
                 LogUtil.e("测试5" + users1.toString());
 
-                BaseBean baseBean2 = new Gson().fromJson(t6,typeBase);
-                LogUtil.e("base2 "+baseBean2.toString());
-                User users2 = gson(true).fromJson(baseBean2.getData().toString(),User.class);
+                BaseBean baseBean2 = new Gson().fromJson(t6, typeBase);
+                LogUtil.e("base2 " + baseBean2.toString());
+                User users2 = gson(true).fromJson(baseBean2.getData().toString(), User.class);
                 LogUtil.e("测试6" + users2.toString());
 
-                BaseBean baseBean3 = new Gson().fromJson(t7,typeBase);
-                LogUtil.e("base3 "+baseBean3.toString());
-                List<User> users3 = gson(false).fromJson(baseBean3.getData().toString(),type);
+                BaseBean baseBean3 = new Gson().fromJson(t7, typeBase);
+                LogUtil.e("base3 " + baseBean3.toString());
+                List<User> users3 = gson(false).fromJson(baseBean3.getData().toString(), type);
                 LogUtil.e("测试7" + users3.toString());
 
-                BaseBean baseBean4 = new Gson().fromJson(t8,typeBase);
-                LogUtil.e("base4 "+baseBean4.toString());
-                List<User> users4 = gson(false).fromJson(baseBean4.getData().toString(),type);
-                LogUtil.e("测试8" + users4.toString());
+                BaseBean baseBean4 = new Gson().fromJson(t8, typeBase);
+                LogUtil.e("base4 " + baseBean4.toString());
+                List<User> users4 = gson(false).fromJson(baseBean4.getData().toString(), type);
+                LogUtil.e("测试8" + users4.toString());*/
+
 
             }
         });

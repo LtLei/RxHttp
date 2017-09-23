@@ -20,7 +20,7 @@ import java.util.List;
  */
 
 public class GsonUtil {
-    private static GsonBuilder gson;
+    private static Gson gson;
 
     static {
         gson = new GsonBuilder()
@@ -34,7 +34,7 @@ public class GsonUtil {
                         }
                     }
                 })
-        ;
+                .create();
     }
 
     public static ParameterizedType type(final Class raw, final Type... args) {
@@ -54,11 +54,11 @@ public class GsonUtil {
     }
 
     public static <T> T fromJson(String in, Type type) {
-        return gson(!type.getClass().isArray()).fromJson(in, type);
+        return gson.fromJson(in, type);
     }
 
     public static <T> T fromJson(JsonReader reader, Type type) {
-        return gson(!type.getClass().isArray()).fromJson(reader, type);
+        return gson.fromJson(reader, type);
     }
 
     public static Gson gson(final boolean needObject) {
@@ -66,6 +66,7 @@ public class GsonUtil {
                 .registerTypeHierarchyAdapter(Object.class, new JsonDeserializer<Object>() {
                     @Override
                     public Object deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
+
                         if (needObject) {
                             if (json.isJsonObject()) {
                                 return new Gson().fromJson(json, typeOfT);

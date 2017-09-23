@@ -5,6 +5,9 @@ import com.lei.lib.java.rxhttp.entity.IEntity;
 import com.lei.lib.java.rxhttp.entity.RxResponse;
 import com.lei.lib.java.rxhttp.exception.ApiException;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+
 import java.io.Reader;
 import java.lang.reflect.Type;
 
@@ -86,23 +89,22 @@ public class ResponseConvert<T> {
     public RxResponse<T> transformDataWithEntity(String in) throws Exception {
         RxResponse<T> response = new RxResponse<>(false);
 
-        IEntity entity = GsonUtil.fromJson(in,clazz);
-        if (entity==null){
+        IEntity iEntity = GsonUtil.fromJson(in, clazz /*GsonUtil.type(clazz, type)*/);
+        if (iEntity == null) {
             response.setData(null);
-        }else if (entity.isOk()){
-            T t = GsonUtil.fromJson(entity.getData().toString(),type);
-//            IEntity<T> iEntity = GsonUtil.fromJson(in, GsonUtil.type(clazz, type));
-            response.setData(t);
-        }else {
-            throw new ApiException(entity.getCode(), entity.getMsg());
-        }
+        } else if (iEntity.isOk()) {
+            if (type.getClass().isArray() && iEntity.getData().getClass().isArray()
+                    ||
+                    !type.getClass().isArray() && !iEntity.getData().getClass().isArray()) {
+                IEntity<T> entity = GsonUtil.fromJson(in, GsonUtil.type(clazz, type));
+                response.setData(entity.getData());
+            } else if (type.getClass().isArray() && !iEntity.getData().getClass().isArray()) {
+                response.setData((T) new JSONArray("[]"));
+            } else {
+                response.setData((T) new JSONObject("{}"));
+            }
 
-//        IEntity<T> iEntity = GsonUtil.fromJson(in, GsonUtil.type(clazz, type));
-//        if (iEntity == null) {
-//            response.setData(null);
-//        } else if (iEntity.isOk()) {
-//            response.setData(iEntity.getData());
-//        } else throw new ApiException(iEntity.getCode(), iEntity.getMsg());
+        } else throw new ApiException(iEntity.getCode(), iEntity.getMsg());
 
         return response;
     }
