@@ -80,8 +80,9 @@ public class ResponseConvert<T> {
         if (entity == null) {
             response.setData(null);
         } else if (entity.isOk()) {
-            IEntity<T> iEntity = GsonUtil.fromJson(jsonReader, GsonUtil.type(clazz, type));
-            response.setData(iEntity.getData());
+            T t = GsonUtil.fromJson(new JsonReader(new StringReader(entity.getData().toString())), type);
+//            IEntity<T> iEntity = GsonUtil.fromJson(jsonReader, GsonUtil.type(clazz, type));
+            response.setData(t);
         } else throw new ApiException(entity.getCode(), entity.getMsg());
 
         return response;
