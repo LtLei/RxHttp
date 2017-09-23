@@ -53,6 +53,10 @@ public class GsonUtil {
         };
     }
 
+    public static <T> T fromJson(String in, Type type) {
+        return gson(!type.getClass().isArray()).fromJson(in, type);
+    }
+
     public static <T> T fromJson(JsonReader reader, Type type) {
         return gson(!type.getClass().isArray()).fromJson(reader, type);
     }

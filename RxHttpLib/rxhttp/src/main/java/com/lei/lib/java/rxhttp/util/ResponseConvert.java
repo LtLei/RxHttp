@@ -6,7 +6,6 @@ import com.lei.lib.java.rxhttp.entity.RxResponse;
 import com.lei.lib.java.rxhttp.exception.ApiException;
 
 import java.io.Reader;
-import java.io.StringReader;
 import java.lang.reflect.Type;
 
 import io.reactivex.Observable;
@@ -61,9 +60,9 @@ public class ResponseConvert<T> {
                     @Override
                     public RxResponse<T> apply(String s) throws Exception {
                         if (useEntity) {
-                            return transformDataWithEntity(new StringReader(s));
+                            return transformDataWithEntity(s);
                         } else {
-                            return transformDataNoEntity(new StringReader(s));
+                            return transformDataNoEntity(s);
                         }
                     }
                 });
@@ -84,9 +83,40 @@ public class ResponseConvert<T> {
         return response;
     }
 
+    public RxResponse<T> transformDataWithEntity(String in) throws Exception {
+        RxResponse<T> response = new RxResponse<>(false);
+
+        IEntity entity = GsonUtil.fromJson(in,clazz);
+        if (entity==null){
+            response.setData(null);
+        }else if (entity.isOk()){
+            T t = GsonUtil.fromJson(entity.getData().toString(),type);
+//            IEntity<T> iEntity = GsonUtil.fromJson(in, GsonUtil.type(clazz, type));
+            response.setData(t);
+        }else {
+            throw new ApiException(entity.getCode(), entity.getMsg());
+        }
+
+//        IEntity<T> iEntity = GsonUtil.fromJson(in, GsonUtil.type(clazz, type));
+//        if (iEntity == null) {
+//            response.setData(null);
+//        } else if (iEntity.isOk()) {
+//            response.setData(iEntity.getData());
+//        } else throw new ApiException(iEntity.getCode(), iEntity.getMsg());
+
+        return response;
+    }
+
+
     public RxResponse<T> transformDataNoEntity(Reader in) throws Exception {
         JsonReader jsonReader = new JsonReader(in);
         T t = GsonUtil.fromJson(jsonReader, type);
+        RxResponse<T> response = new RxResponse<>(false, t);
+        return response;
+    }
+
+    public RxResponse<T> transformDataNoEntity(String in) throws Exception {
+        T t = GsonUtil.fromJson(in, type);
         RxResponse<T> response = new RxResponse<>(false, t);
         return response;
     }
