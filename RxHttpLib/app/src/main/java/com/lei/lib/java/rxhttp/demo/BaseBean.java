@@ -36,7 +36,7 @@ public class BaseBean<T> implements IEntity<T> {
         return "BaseBean{" +
                 "code=" + code +
                 ", message='" + message + '\'' +
-                ", data=" + data.toString() +
+                ", data=" + data +
                 '}';
     }
 }

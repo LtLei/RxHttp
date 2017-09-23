@@ -2,25 +2,20 @@ package com.lei.lib.java.rxhttp.demo;
 
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.View;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonDeserializationContext;
+import com.google.gson.JsonDeserializer;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParseException;
 import com.google.gson.reflect.TypeToken;
-import com.google.gson.stream.JsonReader;
 import com.lei.lib.java.rxcache.util.LogUtil;
-import com.lei.lib.java.rxcache.util.RxUtil;
-import com.lei.lib.java.rxhttp.RxHttp;
-import com.lei.lib.java.rxhttp.entity.RxResponse;
-import com.lei.lib.java.rxhttp.exception.RxException;
-import com.lei.lib.java.rxhttp.subscriber.FailCunsumer;
 import com.lei.lib.java.rxhttp.util.GsonUtil;
 
-import java.io.StringReader;
 import java.lang.reflect.Type;
 import java.util.List;
-
-import io.reactivex.functions.Consumer;
 
 public class MainActivity extends AppCompatActivity {
     int preBytes = 0;
@@ -134,32 +129,83 @@ LogUtil.e(message);
                             }
                         });*/
 
+                String t1 = "{\"name\":\"lei\"}";
+                String t2 = "{}";
+                String t3 = "[{\"name\":\"lei\"},{\"name\":\"lei\"}]";
+                String t4 = "[]";
 
-                String jsonStr = "{" +
-                        "    \"code\": 1," +
-                        "    \"message\": \"1111\"," +
-                        "    \"data\": {" +
-                        "    }" +
-                        "}";
-                String arr = "{\"code\":1111,\"message\":\"1111\",\"data\":[{\"name\":\"lei\"},{\"name\":\"lei\"},{\"name\":\"lei\"}]}";
-                Type type = GsonUtil.type(BaseBean.class, new TypeToken<List<User>>(){}.getType());
-                BaseBean<List<User>> userBaseBean = GsonUtil.fromJson(new JsonReader(new StringReader(jsonStr)), type);
-                Log.e("特使1", userBaseBean.getData().toString());
 
-                BaseBean<List<User>> userBaseBean1 = GsonUtil.fromJson(new JsonReader(new StringReader(arr)), type);
-                Log.e("特使1", userBaseBean1.getData().toString());
+                User u1 = gson(true).fromJson(t1, User.class);
+                LogUtil.e("测试1" + u1.toString());
+                User u2 = gson(true).fromJson(t4, User.class);
+                LogUtil.e("测试2" + u2.toString());
 
-                Type type1 = GsonUtil.type(BaseBean.class, User.class);
-                BaseBean<User> userBaseBean2= GsonUtil.fromJson(new JsonReader(new StringReader(jsonStr)), type1);
-                Log.e("特使2", userBaseBean2.getData().toString());
+                List<User> u3 = gson(false).fromJson(t3, new TypeToken<List<User>>() {
+                }.getType());
+                LogUtil.e("测试3" + u3.toString());
+                List<User> u4 = gson(false).fromJson(t2, new TypeToken<List<User>>() {
+                }.getType());
+                LogUtil.e("测试4" + u4.toString());
 
-                String arr1 = "{\"code\":1111,\"message\":\"1111\",\"data\":[]}";
-                BaseBean<User> userBaseBean3= GsonUtil.fromJson(new JsonReader(new StringReader(arr1)), type1);
-                Log.e("特使2", userBaseBean3.getData().toString());
+                String t5 = "{\"code\":100,\"message\":\"1111\",\"data\":{\"name\":\"lei\"}}";
+                String t8 = "{\"code\":100,\"message\":\"1111\",\"data\":{}}";
+                String t7 = "{\"code\":100,\"message\":\"1111\",\"data\":[{\"name\":\"lei\"},{\"name\":\"lei\"}]}";
+                String t6 = "{\"code\":100,\"message\":\"1111\",\"data\":[]}";
+
+                Type typeBase = GsonUtil.type(BaseBean.class,String.class);
+
+                typeBase = BaseBean.class;
+                Type type = new TypeToken<List<User>>(){}.getType();
+                BaseBean baseBean1 = new Gson().fromJson(t5,typeBase);
+                LogUtil.e("base1 "+baseBean1.toString());
+                User users1 = gson(true).fromJson(baseBean1.getData().toString(),User.class);
+                LogUtil.e("测试5" + users1.toString());
+
+                BaseBean baseBean2 = new Gson().fromJson(t6,typeBase);
+                LogUtil.e("base2 "+baseBean2.toString());
+                User users2 = gson(true).fromJson(baseBean2.getData().toString(),User.class);
+                LogUtil.e("测试6" + users2.toString());
+
+                BaseBean baseBean3 = new Gson().fromJson(t7,typeBase);
+                LogUtil.e("base3 "+baseBean3.toString());
+                List<User> users3 = gson(false).fromJson(baseBean3.getData().toString(),type);
+                LogUtil.e("测试7" + users3.toString());
+
+                BaseBean baseBean4 = new Gson().fromJson(t8,typeBase);
+                LogUtil.e("base4 "+baseBean4.toString());
+                List<User> users4 = gson(false).fromJson(baseBean4.getData().toString(),type);
+                LogUtil.e("测试8" + users4.toString());
+
             }
         });
 
-        }
+    }
+
+    private Gson gson(final boolean needObject) {
+        return new GsonBuilder()
+                .registerTypeHierarchyAdapter(Object.class, new JsonDeserializer<Object>() {
+                    @Override
+                    public Object deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
+                        if (needObject) {
+                            if (json.isJsonObject()) {
+                                LogUtil.e("1111");
+                                return new Gson().fromJson(json, typeOfT);
+                            } else {
+                                LogUtil.e("2222");
+                                return new Gson().fromJson("{}", typeOfT);
+                            }
+                        } else {
+                            if (json.isJsonArray()) {
+                                LogUtil.e("3333");
+                                return new Gson().fromJson(json, typeOfT);
+                            } else {
+                                LogUtil.e("4444");
+                                return new Gson().fromJson("[]", typeOfT);
+                            }
+                        }
+                    }
+                }).create();
+    }
 
 
     public class User {
