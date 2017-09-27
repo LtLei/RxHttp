@@ -30,13 +30,12 @@ public class GsonUtil {
             @Override
             public Object deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
                 Class<?> rawType = $Gson$Types.getRawType(typeOfT);
-                boolean isArray;
-                isArray = List.class.isAssignableFrom(rawType);
-                if (!isArray && typeOfT instanceof ParameterizedType) {
+                boolean isArray = List.class.isAssignableFrom(rawType);
+                if (IEntity.class.isAssignableFrom(rawType) && !isArray) {
                     //有base
                     Class trueType = $Gson$Types.getRawType(((ParameterizedType) typeOfT).getActualTypeArguments()[0]);
                     isArray = List.class.isAssignableFrom(trueType);
-                    LogUtil.e("确认是不是列表？" + isArray + ">>>>>>>" + trueType + ",  " + trueType);
+                    LogUtil.e("确认是不是列表？" + isArray + ">>>>>>>" + trueType);
 
                     IEntity iEntity = (IEntity) new Gson().fromJson(json, rawType);
                     boolean isList = List.class.isAssignableFrom(iEntity.getData().getClass());
