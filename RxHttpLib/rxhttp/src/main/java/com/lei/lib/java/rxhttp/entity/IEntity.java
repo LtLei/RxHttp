@@ -5,11 +5,17 @@ package com.lei.lib.java.rxhttp.entity;
  */
 
 public interface IEntity<T> {
+    void setCode(int code);
+
     int getCode();
 
     String getMsg();
 
+    void setMsg(String msg);
+
     T getData();
+
+    void setData(T data);
 
     boolean isOk();
 }

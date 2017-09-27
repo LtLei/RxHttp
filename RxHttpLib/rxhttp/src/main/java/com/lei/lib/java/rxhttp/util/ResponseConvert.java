@@ -1,18 +1,12 @@
 package com.lei.lib.java.rxhttp.util;
 
-import com.google.gson.reflect.TypeToken;
 import com.google.gson.stream.JsonReader;
 import com.lei.lib.java.rxhttp.entity.IEntity;
 import com.lei.lib.java.rxhttp.entity.RxResponse;
 import com.lei.lib.java.rxhttp.exception.ApiException;
 
-import org.json.JSONArray;
-import org.json.JSONObject;
-
 import java.io.Reader;
-import java.io.StringReader;
 import java.lang.reflect.Type;
-import java.util.List;
 
 import io.reactivex.Observable;
 import io.reactivex.ObservableSource;
@@ -66,9 +60,9 @@ public class ResponseConvert<T> {
                     @Override
                     public RxResponse<T> apply(String s) throws Exception {
                         if (useEntity) {
-                            return transformDataWithEntity(new StringReader(s));
+                            return transformDataWithEntity(s);
                         } else {
-                            return transformDataNoEntity(new StringReader(s));
+                            return transformDataNoEntity(s);
                         }
                     }
                 });
@@ -80,51 +74,20 @@ public class ResponseConvert<T> {
         JsonReader jsonReader = new JsonReader(in);
         RxResponse<T> response = new RxResponse<>(false);
 
-        IEntity iEntity = GsonUtil.fromJson(jsonReader, clazz);
-        if (iEntity == null) {
-            response.setData(null);
-        } else if (iEntity.isOk()) {
-            if (!type.getClass().isArray() && !iEntity.getData().getClass().isArray()) {
-                IEntity<T> entity = GsonUtil.fromJson(jsonReader, GsonUtil.type(clazz, new Type[]{type}));
-                response.setData(entity.getData());
-            } else if (type.getClass().isArray() && iEntity.getData().getClass().isArray()) {
-                Type arrayType = GsonUtil.type(new TypeToken<List>() {
-                }.getType(), new Type[]{type});
-                IEntity<T> entity = GsonUtil.fromJson(jsonReader, GsonUtil.type(clazz, new Type[]{arrayType}));
-                response.setData(entity.getData());
-            } else if (type.getClass().isArray() && !iEntity.getData().getClass().isArray()) {
-                response.setData((T) new JSONArray("[]"));
-            } else {
-                response.setData((T) new JSONObject("{}"));
-            }
-
-        } else throw new ApiException(iEntity.getCode(), iEntity.getMsg());
+        IEntity<T> entity = GsonUtil.fromJson(jsonReader, GsonUtil.type(clazz, new Type[]{type}));
+        if (entity.isOk()) {
+            response.setData(entity.getData());
+        } else throw new ApiException(entity.getCode(), entity.getMsg());
 
         return response;
     }
 
     public RxResponse<T> transformDataWithEntity(String in) throws Exception {
         RxResponse<T> response = new RxResponse<>(false);
-
-        IEntity iEntity = GsonUtil.fromJson(in, clazz);
-        if (iEntity == null) {
-            response.setData(null);
-        } else if (iEntity.isOk()) {
-            if (!type.getClass().isArray() && !iEntity.getData().getClass().isArray()) {
-                IEntity<T> entity = GsonUtil.fromJson(in, GsonUtil.type(clazz, new Type[]{type}));
-                response.setData(entity.getData());
-            } else if (type.getClass().isArray() && iEntity.getData().getClass().isArray()) {
-                Type arrayType = GsonUtil.type(new TypeToken<List>() {
-                }.getType(), new Type[]{type});
-                IEntity<T> entity = GsonUtil.fromJson(in, GsonUtil.type(clazz, new Type[]{arrayType}));
-                response.setData(entity.getData());
-            } else if (type.getClass().isArray() && !iEntity.getData().getClass().isArray()) {
-                response.setData((T) new JSONArray("[]"));
-            } else {
-                response.setData((T) new JSONObject("{}"));
-            }
-
-        } else throw new ApiException(iEntity.getCode(), iEntity.getMsg());
+        IEntity<T> entity = GsonUtil.fromJson(in, GsonUtil.type(clazz, new Type[]{type}));
+        if (entity.isOk()) {
+            response.setData(entity.getData());
+        } else throw new ApiException(entity.getCode(), entity.getMsg());
 
         return response;
     }

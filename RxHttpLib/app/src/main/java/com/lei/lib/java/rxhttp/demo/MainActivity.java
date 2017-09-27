@@ -135,57 +135,35 @@ LogUtil.e(message);
                 String t3 = "[{\"name\":\"lei\"},{\"name\":\"lei\"}]";
                 String t4 = "[]";
 
+                User user = GsonUtil.fromJson(t1, User.class);
+                LogUtil.e("Test ==== user true " + user.toString());
+                user = GsonUtil.fromJson(t4, User.class);
+                LogUtil.e("Test ==== user false " + user.toString());
 
-                User u1 = gson(true).fromJson(t1, User.class);
-                LogUtil.e("测试1" + u1.toString());
-                User u2 = gson(true).fromJson(t4, User.class);
-                LogUtil.e("测试2" + u2.toString());
-
-                List<User> u3 = gson(false).fromJson(t3, new TypeToken<List<User>>() {
+                List<User> userList = GsonUtil.fromJson(t3, new TypeToken<List<User>>() {
                 }.getType());
-                LogUtil.e("测试3" + u3.toString());
-                List<User> u4 = gson(false).fromJson(t2, new TypeToken<List<User>>() {
+                LogUtil.e("Test ==== list true " + userList.toString());
+                userList = GsonUtil.fromJson(t2, new TypeToken<List<User>>() {
                 }.getType());
-                LogUtil.e("测试4" + u4.toString());
+                LogUtil.e("Test ==== list false " + userList.toString());
 
                 String t5 = "{\"code\":100,\"message\":\"1111\",\"data\":{\"name\":\"lei\"}}";
                 String t8 = "{\"code\":100,\"message\":\"1111\",\"data\":{}}";
                 String t7 = "{\"code\":100,\"message\":\"1111\",\"data\":[{\"name\":\"lei\"},{\"name\":\"lei\"}]}";
                 String t6 = "{\"code\":100,\"message\":\"1111\",\"data\":[]}";
 
-                Type typeBase = GsonUtil.type(BaseBean.class, String.class);
+                Type type = GsonUtil.type(BaseBean.class, new Type[]{User.class});
+                BaseBean<User> userBaseBean = GsonUtil.fromJson(t5, type);
+                LogUtil.e("Test ==== base user true " + userBaseBean.toString());
+                userBaseBean = GsonUtil.fromJson(t6, type);
+                LogUtil.e("Test ==== base user false " + userBaseBean.toString());
 
-                typeBase = BaseBean.class;
-                Type type = new TypeToken<List<User>>() {
-                }.getType();
-                BaseBean baseBean1 = new Gson().fromJson(t5, typeBase);
-                LogUtil.e("base1 " + baseBean1.toString());
-                User users1 = gson(true).fromJson(baseBean1.getData().toString(), User.class);
-                LogUtil.e("测试5" + users1.toString());
-
-                BaseBean baseBean2 = new Gson().fromJson(t6, typeBase);
-                LogUtil.e("base2 " + baseBean2.toString());
-                User users2 = gson(true).fromJson(baseBean2.getData().toString(), User.class);
-                LogUtil.e("测试6" + users2.toString());
-
-                BaseBean baseBean3 = new Gson().fromJson(t7, typeBase);
-                LogUtil.e("base3 " + baseBean3.toString());
-                List<User> users3 = gson(false).fromJson(baseBean3.getData().toString(), type);
-                LogUtil.e("测试7" + users3.toString());
-
-                BaseBean baseBean4 = new Gson().fromJson(t8, typeBase);
-                LogUtil.e("base4 " + baseBean4.toString());
-                List<User> users4 = gson(false).fromJson(baseBean4.getData().toString(), type);
-                LogUtil.e("测试8" + users4.toString());
-
-                Type typeU = type(new TypeToken<List>() {
-                }.getType(), User.class);
-                BaseBean baseBean5 = new Gson().fromJson(t7, typeBase);
-                LogUtil.e("base5 " + baseBean5.toString());
-                Type type1 = type(BaseBean.class, new Type[]{typeU});
-                BaseBean<List<User>> user5 = gson(true).fromJson(t7, type1);
-                List<User> users5 = user5.getData();
-                LogUtil.e("测试9" + users5.toString());
+                Type type1 = GsonUtil.type(BaseBean.class, new TypeToken<List<User>>() {
+                }.getType());
+                BaseBean<List<User>> listBaseBean = GsonUtil.fromJson(t7, type1);
+                LogUtil.e("Test ==== base list user true " + listBaseBean.toString());
+                listBaseBean = GsonUtil.fromJson(t8, type1);
+                LogUtil.e("Test ==== base list user false " + listBaseBean.toString());
             }
         });
 
@@ -212,6 +190,10 @@ LogUtil.e(message);
                 .registerTypeHierarchyAdapter(Object.class, new JsonDeserializer<Object>() {
                     @Override
                     public Object deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
+                        LogUtil.e("哈哈" + typeOfT);
+                        Type type = new TypeToken<List<User>>() {
+                        }.getType();
+                        LogUtil.e("哈哈" + typeOfT.getClass().isInstance(type));
                         if (needObject) {
                             if (json.isJsonObject()) {
                                 LogUtil.e("1111");

@@ -6,7 +6,7 @@ import java.io.Serializable;
  * Created by rymyz on 2017/8/28.
  */
 
-public class RxEntity<T> implements IEntity, Serializable {
+public class RxEntity<T> implements IEntity<T>, Serializable {
 
     private static final long serialVersionUID = 1119086637204832080L;
     private int code;
@@ -18,6 +18,7 @@ public class RxEntity<T> implements IEntity, Serializable {
         return code;
     }
 
+    @Override
     public void setCode(int code) {
         this.code = code;
     }
@@ -27,6 +28,7 @@ public class RxEntity<T> implements IEntity, Serializable {
         return msg;
     }
 
+    @Override
     public void setMsg(String msg) {
         this.msg = msg;
     }
@@ -50,6 +52,7 @@ public class RxEntity<T> implements IEntity, Serializable {
                 '}';
     }
 
+    @Override
     public void setData(T data) {
         this.data = data;
     }

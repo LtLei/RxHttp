@@ -12,6 +12,11 @@ public class BaseBean<T> implements IEntity<T> {
     private T data;
 
     @Override
+    public void setCode(int code) {
+        this.code = code;
+    }
+
+    @Override
     public int getCode() {
         return code;
     }
@@ -22,8 +27,18 @@ public class BaseBean<T> implements IEntity<T> {
     }
 
     @Override
+    public void setMsg(String msg) {
+        this.message = msg;
+    }
+
+    @Override
     public T getData() {
         return data;
+    }
+
+    @Override
+    public void setData(T data) {
+        this.data = data;
     }
 
     @Override
