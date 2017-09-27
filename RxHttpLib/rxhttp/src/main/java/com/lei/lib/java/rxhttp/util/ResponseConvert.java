@@ -5,8 +5,10 @@ import com.lei.lib.java.rxhttp.entity.IEntity;
 import com.lei.lib.java.rxhttp.entity.RxResponse;
 import com.lei.lib.java.rxhttp.exception.ApiException;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+
 import java.io.Reader;
-import java.io.StringReader;
 import java.lang.reflect.Type;
 
 import io.reactivex.Observable;
@@ -61,9 +63,9 @@ public class ResponseConvert<T> {
                     @Override
                     public RxResponse<T> apply(String s) throws Exception {
                         if (useEntity) {
-                            return transformDataWithEntity(new StringReader(s));
+                            return transformDataWithEntity(s);
                         } else {
-                            return transformDataNoEntity(new StringReader(s));
+                            return transformDataNoEntity(s);
                         }
                     }
                 });
@@ -73,8 +75,12 @@ public class ResponseConvert<T> {
 
     public RxResponse<T> transformDataWithEntity(Reader in) throws Exception {
         JsonReader jsonReader = new JsonReader(in);
+<<<<<<< HEAD
 
         IEntity<T> iEntity = GsonUtil.fromJson(jsonReader, GsonUtil.type(clazz, new Type[]{type}));
+=======
+        IEntity<T> iEntity = GsonUtil.fromJson(jsonReader, GsonUtil.type(clazz, type));
+>>>>>>> 1b2b8658c5d5e03380bf8532f8d1db65096afca2
         RxResponse<T> response = new RxResponse<>(false);
         if (iEntity == null) {
             response.setData(null);
@@ -85,9 +91,39 @@ public class ResponseConvert<T> {
         return response;
     }
 
+    public RxResponse<T> transformDataWithEntity(String in) throws Exception {
+        RxResponse<T> response = new RxResponse<>(false);
+
+        IEntity iEntity = GsonUtil.fromJson(in, clazz /*GsonUtil.type(clazz, type)*/);
+        if (iEntity == null) {
+            response.setData(null);
+        } else if (iEntity.isOk()) {
+            if (type.getClass().isArray() && iEntity.getData().getClass().isArray()
+                    ||
+                    !type.getClass().isArray() && !iEntity.getData().getClass().isArray()) {
+                IEntity<T> entity = GsonUtil.fromJson(in, GsonUtil.type(clazz, type));
+                response.setData(entity.getData());
+            } else if (type.getClass().isArray() && !iEntity.getData().getClass().isArray()) {
+                response.setData((T) new JSONArray("[]"));
+            } else {
+                response.setData((T) new JSONObject("{}"));
+            }
+
+        } else throw new ApiException(iEntity.getCode(), iEntity.getMsg());
+
+        return response;
+    }
+
+
     public RxResponse<T> transformDataNoEntity(Reader in) throws Exception {
         JsonReader jsonReader = new JsonReader(in);
         T t = GsonUtil.fromJson(jsonReader, type);
+        RxResponse<T> response = new RxResponse<>(false, t);
+        return response;
+    }
+
+    public RxResponse<T> transformDataNoEntity(String in) throws Exception {
+        T t = GsonUtil.fromJson(in, type);
         RxResponse<T> response = new RxResponse<>(false, t);
         return response;
     }

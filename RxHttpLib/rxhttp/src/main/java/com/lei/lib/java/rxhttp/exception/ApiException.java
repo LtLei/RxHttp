@@ -24,6 +24,6 @@ public class ApiException extends Exception {
 
     @Override
     public String getMessage() {
-        return code + "#" + msg;
+        return msg;
     }
 }

@@ -15,6 +15,7 @@ import com.lei.lib.java.rxhttp.request.PostJsonRequest;
 import com.lei.lib.java.rxhttp.request.PostRequest;
 import com.lei.lib.java.rxhttp.request.PutRequest;
 import com.lei.lib.java.rxhttp.request.UploadRequest;
+import com.lei.lib.java.rxhttp.util.ThrowableHandler;
 import com.lei.lib.java.rxhttp.util.Utilities;
 
 import java.lang.reflect.Type;
@@ -479,5 +480,9 @@ public class RxHttp {
         Utilities.checkNullOrEmpty(url, "url is null or empty, when download file, you must set full url.");
         Utilities.checkNotNull(type, "type is null.");
         return new DownloadRequest<>(mContext, url, type);
+    }
+
+    public static Throwable hanleError(Throwable e) {
+        return ThrowableHandler.handleErr(e);
     }
 }

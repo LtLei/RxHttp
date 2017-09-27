@@ -1,22 +1,20 @@
 package com.lei.lib.java.rxhttp.demo;
 
-import android.app.Notification;
-import android.app.NotificationManager;
-import android.content.Context;
 import android.os.Bundle;
-import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.View;
 
-import com.lei.lib.java.rxcache.util.RxUtil;
-import com.lei.lib.java.rxhttp.RxHttp;
-import com.lei.lib.java.rxhttp.progress.ProgressListener;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonDeserializationContext;
+import com.google.gson.JsonDeserializer;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParseException;
+import com.google.gson.reflect.TypeToken;
+import com.lei.lib.java.rxcache.util.LogUtil;
 
-import java.io.File;
-
-import io.reactivex.functions.Action;
-import io.reactivex.functions.Consumer;
+import java.lang.reflect.Type;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
     int preBytes = 0;
@@ -29,6 +27,27 @@ public class MainActivity extends AppCompatActivity {
         findViewById(R.id.button).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                /*RxHttp.getInstance()
+                        .<User>get("",User.class)
+                        .request()
+                        .compose(RxUtil.<RxResponse<User>>io_main())
+                        .subscribe(new Consumer<RxResponse<User>>() {
+                            @Override
+                            public void accept(RxResponse<User> userRxResponse) throws Exception {
+                                LogUtil.e("数据" + userRxResponse.getData().toString());
+                            }
+                        }, new FailCunsumer() {
+                            @Override
+                            public void _onFail(int code, String message) {
+LogUtil.e(message);
+                            }
+
+                            @Override
+                            public void _onError(RxException e) {
+                                LogUtil.e(e.getMsg());
+                            }
+                        });*/
+
                 /*RxHttp.getInstance()
                         .<UserBean>delete("index", UserBean.class)
                         .addHeader("Hedada", "hengheng")
@@ -64,7 +83,7 @@ public class MainActivity extends AppCompatActivity {
                             }
                         });*/
 
-                final Notification.Builder notifyBuilder = new Notification.Builder(MainActivity.this)
+                /*final Notification.Builder notifyBuilder = new Notification.Builder(MainActivity.this)
                         .setContentTitle("开始下载")
                         .setSmallIcon(R.mipmap.ic_launcher_round)
                         .setAutoCancel(false);
@@ -107,9 +126,105 @@ public class MainActivity extends AppCompatActivity {
                             public void run() throws Exception {
                                 Log.e("测试", "下载完成了");
                             }
-                        });
+                        });*/
+
+                String t1 = "{\"name\":\"lei\"}";
+                String t2 = "{}";
+                String t3 = "[{\"name\":\"lei\"},{\"name\":\"lei\"}]";
+                String t4 = "[]";
+
+
+                User u1 = gson(true).fromJson(t1, User.class);
+                LogUtil.e("测试1" + u1.toString());
+                User u2 = gson(true).fromJson(t4, User.class);
+                LogUtil.e("测试2" + u2.toString());
+
+                List<User> u3 = gson(false).fromJson(t3, new TypeToken<List<User>>() {
+                }.getType());
+                LogUtil.e("测试3" + u3.toString());
+                List<User> u4 = gson(false).fromJson(t2, new TypeToken<List<User>>() {
+                }.getType());
+                LogUtil.e("测试4" + u4.toString());
+
+                String t5 = "{\"code\":100,\"message\":\"1111\",\"data\":{\"name\":\"lei\"}}";
+                String t8 = "{\"code\":100,\"message\":\"1111\",\"data\":{}}";
+                String t7 = "{\"code\":100,\"message\":\"1111\",\"data\":[{\"name\":\"lei\"},{\"name\":\"lei\"}]}";
+                String t6 = "{\"code\":100,\"message\":\"1111\",\"data\":[]}";
+
+               /* Type typeBase = GsonUtil.type(BaseBean.class, String.class);
+
+                typeBase = BaseBean.class;
+                Type type = new TypeToken<List<User>>() {
+                }.getType();
+                BaseBean baseBean1 = new Gson().fromJson(t5, typeBase);
+                LogUtil.e("base1 " + baseBean1.toString());
+                User users1 = gson(true).fromJson(baseBean1.getData().toString(), User.class);
+                LogUtil.e("测试5" + users1.toString());
+
+                BaseBean baseBean2 = new Gson().fromJson(t6, typeBase);
+                LogUtil.e("base2 " + baseBean2.toString());
+                User users2 = gson(true).fromJson(baseBean2.getData().toString(), User.class);
+                LogUtil.e("测试6" + users2.toString());
+
+                BaseBean baseBean3 = new Gson().fromJson(t7, typeBase);
+                LogUtil.e("base3 " + baseBean3.toString());
+                List<User> users3 = gson(false).fromJson(baseBean3.getData().toString(), type);
+                LogUtil.e("测试7" + users3.toString());
+
+                BaseBean baseBean4 = new Gson().fromJson(t8, typeBase);
+                LogUtil.e("base4 " + baseBean4.toString());
+                List<User> users4 = gson(false).fromJson(baseBean4.getData().toString(), type);
+                LogUtil.e("测试8" + users4.toString());*/
+
+
             }
         });
+
     }
 
+    private Gson gson(final boolean needObject) {
+        return new GsonBuilder()
+                .registerTypeHierarchyAdapter(Object.class, new JsonDeserializer<Object>() {
+                    @Override
+                    public Object deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
+                        if (needObject) {
+                            if (json.isJsonObject()) {
+                                LogUtil.e("1111");
+                                return new Gson().fromJson(json, typeOfT);
+                            } else {
+                                LogUtil.e("2222");
+                                return new Gson().fromJson("{}", typeOfT);
+                            }
+                        } else {
+                            if (json.isJsonArray()) {
+                                LogUtil.e("3333");
+                                return new Gson().fromJson(json, typeOfT);
+                            } else {
+                                LogUtil.e("4444");
+                                return new Gson().fromJson("[]", typeOfT);
+                            }
+                        }
+                    }
+                }).create();
+    }
+
+
+    public class User {
+        private String name;
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
+
+        @Override
+        public String toString() {
+            return "User{" +
+                    "name='" + name + '\'' +
+                    '}';
+        }
+    }
 }
