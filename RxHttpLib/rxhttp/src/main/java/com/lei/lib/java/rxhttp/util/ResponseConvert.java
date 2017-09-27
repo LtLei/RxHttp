@@ -75,12 +75,7 @@ public class ResponseConvert<T> {
 
     public RxResponse<T> transformDataWithEntity(Reader in) throws Exception {
         JsonReader jsonReader = new JsonReader(in);
-<<<<<<< HEAD
-
-        IEntity<T> iEntity = GsonUtil.fromJson(jsonReader, GsonUtil.type(clazz, new Type[]{type}));
-=======
         IEntity<T> iEntity = GsonUtil.fromJson(jsonReader, GsonUtil.type(clazz, type));
->>>>>>> 1b2b8658c5d5e03380bf8532f8d1db65096afca2
         RxResponse<T> response = new RxResponse<>(false);
         if (iEntity == null) {
             response.setData(null);
