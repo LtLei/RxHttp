@@ -37,7 +37,7 @@ public class GsonUtil {
                 .create();
     }
 
-    public static ParameterizedType type(final Class raw, final Type... args) {
+    public static ParameterizedType type(final Type raw, final Type... args) {
         return new ParameterizedType() {
             public Type getRawType() {
                 return raw;

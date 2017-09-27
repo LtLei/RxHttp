@@ -36,8 +36,7 @@ public class BaseApp extends Application {
 //                .addCommonHeader("nihao", "hao")
 //                .addCommonHeader("nihao", "hao")
                 .setEntity(BaseBean.class)
-                .useEntity(true)
-        .convertBefore(new ResponseConverter());
+                .useEntity(true);
 //                .convertBefore(new ObservableTransformer<ResponseBody, String>() {
 //                    @Override
 //                    public ObservableSource<String> apply(Observable<ResponseBody> upstream) {

@@ -1,5 +1,6 @@
 package com.lei.lib.java.rxhttp.util;
 
+import com.google.gson.reflect.TypeToken;
 import com.google.gson.stream.JsonReader;
 import com.lei.lib.java.rxhttp.entity.IEntity;
 import com.lei.lib.java.rxhttp.entity.RxResponse;
@@ -9,7 +10,9 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.Reader;
+import java.io.StringReader;
 import java.lang.reflect.Type;
+import java.util.List;
 
 import io.reactivex.Observable;
 import io.reactivex.ObservableSource;
@@ -63,9 +66,9 @@ public class ResponseConvert<T> {
                     @Override
                     public RxResponse<T> apply(String s) throws Exception {
                         if (useEntity) {
-                            return transformDataWithEntity(s);
+                            return transformDataWithEntity(new StringReader(s));
                         } else {
-                            return transformDataNoEntity(s);
+                            return transformDataNoEntity(new StringReader(s));
                         }
                     }
                 });
@@ -75,12 +78,26 @@ public class ResponseConvert<T> {
 
     public RxResponse<T> transformDataWithEntity(Reader in) throws Exception {
         JsonReader jsonReader = new JsonReader(in);
-        IEntity<T> iEntity = GsonUtil.fromJson(jsonReader, GsonUtil.type(clazz, type));
         RxResponse<T> response = new RxResponse<>(false);
+
+        IEntity iEntity = GsonUtil.fromJson(jsonReader, clazz);
         if (iEntity == null) {
             response.setData(null);
         } else if (iEntity.isOk()) {
-            response.setData(iEntity.getData());
+            if (!type.getClass().isArray() && !iEntity.getData().getClass().isArray()) {
+                IEntity<T> entity = GsonUtil.fromJson(jsonReader, GsonUtil.type(clazz, new Type[]{type}));
+                response.setData(entity.getData());
+            } else if (type.getClass().isArray() && iEntity.getData().getClass().isArray()) {
+                Type arrayType = GsonUtil.type(new TypeToken<List>() {
+                }.getType(), new Type[]{type});
+                IEntity<T> entity = GsonUtil.fromJson(jsonReader, GsonUtil.type(clazz, new Type[]{arrayType}));
+                response.setData(entity.getData());
+            } else if (type.getClass().isArray() && !iEntity.getData().getClass().isArray()) {
+                response.setData((T) new JSONArray("[]"));
+            } else {
+                response.setData((T) new JSONObject("{}"));
+            }
+
         } else throw new ApiException(iEntity.getCode(), iEntity.getMsg());
 
         return response;
@@ -89,14 +106,17 @@ public class ResponseConvert<T> {
     public RxResponse<T> transformDataWithEntity(String in) throws Exception {
         RxResponse<T> response = new RxResponse<>(false);
 
-        IEntity iEntity = GsonUtil.fromJson(in, clazz /*GsonUtil.type(clazz, type)*/);
+        IEntity iEntity = GsonUtil.fromJson(in, clazz);
         if (iEntity == null) {
             response.setData(null);
         } else if (iEntity.isOk()) {
-            if (type.getClass().isArray() && iEntity.getData().getClass().isArray()
-                    ||
-                    !type.getClass().isArray() && !iEntity.getData().getClass().isArray()) {
-                IEntity<T> entity = GsonUtil.fromJson(in, GsonUtil.type(clazz, type));
+            if (!type.getClass().isArray() && !iEntity.getData().getClass().isArray()) {
+                IEntity<T> entity = GsonUtil.fromJson(in, GsonUtil.type(clazz, new Type[]{type}));
+                response.setData(entity.getData());
+            } else if (type.getClass().isArray() && iEntity.getData().getClass().isArray()) {
+                Type arrayType = GsonUtil.type(new TypeToken<List>() {
+                }.getType(), new Type[]{type});
+                IEntity<T> entity = GsonUtil.fromJson(in, GsonUtil.type(clazz, new Type[]{arrayType}));
                 response.setData(entity.getData());
             } else if (type.getClass().isArray() && !iEntity.getData().getClass().isArray()) {
                 response.setData((T) new JSONArray("[]"));

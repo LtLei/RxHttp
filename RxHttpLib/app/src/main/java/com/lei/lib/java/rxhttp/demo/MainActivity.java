@@ -12,7 +12,9 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonParseException;
 import com.google.gson.reflect.TypeToken;
 import com.lei.lib.java.rxcache.util.LogUtil;
+import com.lei.lib.java.rxhttp.util.GsonUtil;
 
+import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.List;
 
@@ -151,7 +153,7 @@ LogUtil.e(message);
                 String t7 = "{\"code\":100,\"message\":\"1111\",\"data\":[{\"name\":\"lei\"},{\"name\":\"lei\"}]}";
                 String t6 = "{\"code\":100,\"message\":\"1111\",\"data\":[]}";
 
-               /* Type typeBase = GsonUtil.type(BaseBean.class, String.class);
+                Type typeBase = GsonUtil.type(BaseBean.class, String.class);
 
                 typeBase = BaseBean.class;
                 Type type = new TypeToken<List<User>>() {
@@ -174,12 +176,35 @@ LogUtil.e(message);
                 BaseBean baseBean4 = new Gson().fromJson(t8, typeBase);
                 LogUtil.e("base4 " + baseBean4.toString());
                 List<User> users4 = gson(false).fromJson(baseBean4.getData().toString(), type);
-                LogUtil.e("测试8" + users4.toString());*/
+                LogUtil.e("测试8" + users4.toString());
 
-
+                Type typeU = type(new TypeToken<List>() {
+                }.getType(), User.class);
+                BaseBean baseBean5 = new Gson().fromJson(t7, typeBase);
+                LogUtil.e("base5 " + baseBean5.toString());
+                Type type1 = type(BaseBean.class, new Type[]{typeU});
+                BaseBean<List<User>> user5 = gson(true).fromJson(t7, type1);
+                List<User> users5 = user5.getData();
+                LogUtil.e("测试9" + users5.toString());
             }
         });
 
+    }
+
+    public static ParameterizedType type(final Type raw, final Type... args) {
+        return new ParameterizedType() {
+            public Type getRawType() {
+                return raw;
+            }
+
+            public Type[] getActualTypeArguments() {
+                return args;
+            }
+
+            public Type getOwnerType() {
+                return null;
+            }
+        };
     }
 
     private Gson gson(final boolean needObject) {
