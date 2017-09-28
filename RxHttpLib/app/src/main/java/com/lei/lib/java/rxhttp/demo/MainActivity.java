@@ -164,6 +164,27 @@ LogUtil.e(message);
                 LogUtil.e("Test ==== base list user true " + listBaseBean.toString());
                 listBaseBean = GsonUtil.fromJson(t8, type1);
                 LogUtil.e("Test ==== base list user false " + listBaseBean.toString());
+
+                int[] a = {11, 22, 3, 4, 55};
+                int[] b = {22, 11, 33, 4, 54};
+                int[] c = {12, 11, 33, 4, 55};
+
+                int[][] data = {a, b, c};
+                int[] flag = new int[a.length];
+                for (int i = 0; i < a.length; i++) {
+                    int tmp = data[0][i];
+                    for (int j = 1; j < data.length; j++) {
+                        if (tmp < data[j][i]) {
+                            LogUtil.e(tmp + ":::" + data[j][i]);
+                            flag[i] = j;
+                            tmp = data[j][i];
+                        }
+                    }
+                }
+                for (int i = 0; i < flag.length; i++) {
+                    LogUtil.e("顺序" + flag[i]);
+                }
+
             }
         });
 

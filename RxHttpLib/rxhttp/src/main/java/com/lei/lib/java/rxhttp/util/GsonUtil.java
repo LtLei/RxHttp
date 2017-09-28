@@ -38,6 +38,9 @@ public class GsonUtil {
                     LogUtil.e("确认是不是列表？" + isArray + ">>>>>>>" + trueType);
 
                     IEntity iEntity = (IEntity) new Gson().fromJson(json, rawType);
+
+                    if (iEntity.getData()==null)return iEntity;
+
                     boolean isList = List.class.isAssignableFrom(iEntity.getData().getClass());
                     LogUtil.e("再次确认是不是列表？" + isList + ">>>>>>>" + iEntity.getData().getClass());
 
