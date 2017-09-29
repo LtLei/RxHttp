@@ -34,6 +34,7 @@ import okhttp3.OkHttpClient;
 import okhttp3.ResponseBody;
 import retrofit2.Retrofit;
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
+import retrofit2.converter.gson.GsonConverterFactory;
 
 /**
  * 发起请求的基类，用于配置一些共用的属性
@@ -127,6 +128,9 @@ public abstract class BaseRequest<T, R extends BaseRequest<T, R>> {
             retrofitBuilder.addCallAdapterFactory(rxHttp.getCallAdapterFactories().get(i));
         }
 
+        if (rxHttp.getConverterFactories().size()==0){
+            rxHttp.addConverterFactoty(GsonConverterFactory.create());
+        }
         for (int i = 0; i < rxHttp.getConverterFactories().size(); i++) {
             retrofitBuilder.addConverterFactory(rxHttp.getConverterFactories().get(i));
         }
