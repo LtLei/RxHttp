@@ -63,8 +63,9 @@ public abstract class BaseRequest<T, R extends BaseRequest<T, R>> {
     private String requestUrl;
     private long cacheTime = -1;
     private String cacheKey;
-
+    private Application context;
     public BaseRequest(Application context, String path, Type type) {
+        this.context = context;
         this.requestUrl = path;
         this.type = type;
 
@@ -137,6 +138,16 @@ public abstract class BaseRequest<T, R extends BaseRequest<T, R>> {
                 .setDiskDirName(rxHttp.getDiskDirName())
                 .setDiskCacheSizeByMB(rxHttp.getDiskCacheSizeByMB())
                 .setCacheMode(rxHttp.getCacheMode());
+    }
+
+    public R useEntity(boolean useEntity) {
+        this.useEntity = useEntity;
+        return (R) this;
+    }
+
+    public R forceNet(boolean forceNet) {
+        this.forceNet = forceNet;
+        return (R) this;
     }
 
     public R addHeader(String key, String content) {
@@ -306,7 +317,7 @@ public abstract class BaseRequest<T, R extends BaseRequest<T, R>> {
     }
 
     protected Observable<RxResponse<T>> requestFirstNet() {
-        if (!NetworkUtil.isAvailable(RxHttp.getContext())) {
+        if (!NetworkUtil.isAvailable(context)) {
             return getRxCache().<T>get(cacheKey, forceNet, type)
                     .map(new Function<CacheResponse<T>, RxResponse<T>>() {
                         @Override
