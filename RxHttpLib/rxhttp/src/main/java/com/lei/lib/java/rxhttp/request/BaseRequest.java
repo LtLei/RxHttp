@@ -246,7 +246,7 @@ public abstract class BaseRequest<T, R extends BaseRequest<T, R>> {
         return cacheMethod;
     }
 
-    private ResponseConvert<T> getResponseConvert() {
+    protected ResponseConvert<T> getResponseConvert() {
         if (responseConvert == null)
             responseConvert = new ResponseConvert<>(clazz, type, useEntity);
         return responseConvert;

@@ -75,7 +75,7 @@ public final class UploadRequest<T> extends BaseRequest<T, UploadRequest<T>> {
 
     @Override
     public Observable<RxResponse<T>> request() {
-        return requestOnlyNet();
+      return netObservable().compose(getResponseConvert().handleResponseBodyResult());
     }
 
     @Override
