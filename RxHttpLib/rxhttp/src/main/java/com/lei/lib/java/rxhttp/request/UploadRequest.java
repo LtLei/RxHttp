@@ -38,18 +38,18 @@ public final class UploadRequest<T> extends BaseRequest<T, UploadRequest<T>> {
     private boolean formData;
     private ProgressListener progressListener;
 
-    public UploadRequest formData(boolean formData) {
+    public UploadRequest<T> formData(boolean formData) {
         this.formData = formData;
         return this;
     }
 
-    public UploadRequest addFile(File file) {
+    public UploadRequest<T> addFile(File file) {
         Utilities.checkNotNull(file, "file is null.");
         fileParts.add(file);
         return this;
     }
 
-    public UploadRequest addFiles(List<File> files) {
+    public UploadRequest<T> addFiles(List<File> files) {
         Utilities.checkNotNull(files, "files is null.");
         fileParts.addAll(files);
         return this;
