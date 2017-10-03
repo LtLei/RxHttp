@@ -34,6 +34,7 @@ import okhttp3.OkHttpClient;
 import okhttp3.ResponseBody;
 import retrofit2.Retrofit;
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
+import retrofit2.converter.gson.GsonConverterFactory;
 
 /**
  * 发起请求的基类，用于配置一些共用的属性
@@ -63,8 +64,9 @@ public abstract class BaseRequest<T, R extends BaseRequest<T, R>> {
     private String requestUrl;
     private long cacheTime = -1;
     private String cacheKey;
-
+    private Application context;
     public BaseRequest(Application context, String path, Type type) {
+        this.context = context;
         this.requestUrl = path;
         this.type = type;
 
@@ -126,6 +128,9 @@ public abstract class BaseRequest<T, R extends BaseRequest<T, R>> {
             retrofitBuilder.addCallAdapterFactory(rxHttp.getCallAdapterFactories().get(i));
         }
 
+        if (rxHttp.getConverterFactories().size()==0){
+            rxHttp.addConverterFactoty(GsonConverterFactory.create());
+        }
         for (int i = 0; i < rxHttp.getConverterFactories().size(); i++) {
             retrofitBuilder.addConverterFactory(rxHttp.getConverterFactories().get(i));
         }
@@ -137,6 +142,16 @@ public abstract class BaseRequest<T, R extends BaseRequest<T, R>> {
                 .setDiskDirName(rxHttp.getDiskDirName())
                 .setDiskCacheSizeByMB(rxHttp.getDiskCacheSizeByMB())
                 .setCacheMode(rxHttp.getCacheMode());
+    }
+
+    public R useEntity(boolean useEntity) {
+        this.useEntity = useEntity;
+        return (R) this;
+    }
+
+    public R forceNet(boolean forceNet) {
+        this.forceNet = forceNet;
+        return (R) this;
     }
 
     public R addHeader(String key, String content) {
@@ -246,7 +261,7 @@ public abstract class BaseRequest<T, R extends BaseRequest<T, R>> {
         return cacheMethod;
     }
 
-    private ResponseConvert<T> getResponseConvert() {
+    protected ResponseConvert<T> getResponseConvert() {
         if (responseConvert == null)
             responseConvert = new ResponseConvert<>(clazz, type, useEntity);
         return responseConvert;
@@ -306,7 +321,7 @@ public abstract class BaseRequest<T, R extends BaseRequest<T, R>> {
     }
 
     protected Observable<RxResponse<T>> requestFirstNet() {
-        if (!NetworkUtil.isAvailable(RxHttp.getContext())) {
+        if (!NetworkUtil.isAvailable(context)) {
             return getRxCache().<T>get(cacheKey, forceNet, type)
                     .map(new Function<CacheResponse<T>, RxResponse<T>>() {
                         @Override

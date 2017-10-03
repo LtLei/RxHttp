@@ -6,16 +6,16 @@ package com.lei.lib.java.rxhttp.exception;
 
 public class RxException extends Exception {
     public static final int CODE_DEFAULT = Integer.MAX_VALUE;
-    public static final int CODE_HTTP = CODE_DEFAULT-1;
+    public static final int CODE_HTTP = CODE_DEFAULT - 1;
 
-    public static final int CODE_TIMEOUT = CODE_DEFAULT-2;
-    public static final int CODE_UN_CONNECT = CODE_DEFAULT-3;
+    public static final int CODE_TIMEOUT = CODE_DEFAULT - 2;
+    public static final int CODE_UN_CONNECT = CODE_DEFAULT - 3;
     public static final String MSG_TIMEOUT = "网络链接超时，请检查您的网络状态或稍后重试...";
 
-    public static final int CODE_MALFORM_JSON = CODE_DEFAULT-4;
+    public static final int CODE_MALFORM_JSON = CODE_DEFAULT - 4;
     public static final String MSG_MALFORM_JSON = "数据解析错误";
 
-    public static final int CODE_NULL = CODE_DEFAULT-5;
+    public static final int CODE_NULL = CODE_DEFAULT - 5;
     public static final String MSG_NULL = "数据为空";
 
     private int code;
@@ -36,6 +36,6 @@ public class RxException extends Exception {
 
     @Override
     public String getMessage() {
-        return code + "#" + msg;
+        return msg;
     }
 }
