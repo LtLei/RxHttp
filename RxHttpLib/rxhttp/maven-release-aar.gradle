@@ -13,7 +13,7 @@ uploadArchives {
     repositories.mavenDeployer {
         //这里就是最后输出地址，在自己电脑上新建个文件夹，把文件夹路径粘贴在此
         //注意”file://“ + 路径，有三个斜杠，别漏了
-        repository(url: "file:///D:/android/maven/rxhttp")
+        repository(url: "file:///F:/AndroidComponent/RxHttp/RxHttpLib/maven")
 
         pom.project {
             groupId project.PUBLISH_GROUP_ID
