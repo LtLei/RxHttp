@@ -5,7 +5,7 @@ apply plugin: 'maven'
 ext {// ext is a gradle closure allowing the declaration of global properties
     PUBLISH_GROUP_ID = 'com.github.LtLei'
     PUBLISH_ARTIFACT_ID = 'RxHttp'
-    PUBLISH_VERSION = '0.0.26'
+    PUBLISH_VERSION = '0.0.27'
 }
 
 // 3.maven-输出路径
