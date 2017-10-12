@@ -49,7 +49,7 @@ public class ThrowableHandler {
         } else if (e instanceof ApiException) {
             mThrowable = e;
         } else {
-            mThrowable = new RxException(RxException.CODE_DEFAULT, e.getMessage() == null ? e.toString() : e.getMessage());
+            mThrowable = e;
         }
 
         return mThrowable;

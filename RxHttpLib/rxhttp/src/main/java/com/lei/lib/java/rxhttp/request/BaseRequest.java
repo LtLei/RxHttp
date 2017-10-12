@@ -111,7 +111,6 @@ public abstract class BaseRequest<T, R extends BaseRequest<T, R>> {
         if (rxHttp.getAuthenticator() != null)
             okBuilder.authenticator(rxHttp.getAuthenticator());
 
-
         retrofitBuilder = new Retrofit.Builder();
         if (rxHttp.getBaseStringUrl().length() == 0 && rxHttp.getBaseHttpUrl() == null)
             throw new NullPointerException("baseUrl needed, call setBaseUrl() first.");
