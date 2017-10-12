@@ -23,7 +23,7 @@ android {
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     //RxCache缓存工具
-    compile 'com.github.LtLei:RxCache:1.0.1'
+    provided 'com.github.LtLei:RxCache:1.0.3'
     //retrofit2
     compile 'com.squareup.retrofit2:retrofit:2.3.0'
     compile 'com.squareup.retrofit2:converter-gson:2.3.0'
